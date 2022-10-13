@@ -1,0 +1,65 @@
+            localidade                    função                                              subfunção 
+ ALAGOAS          :  1   Administração        : 2   Administração geral                             :16  
+ AMAPÁ            :  1   Agricultura          :22   Alimentação e nutrição                          : 1  
+ CEARÁ            :  1   Assistência social   :10   Assistência à criança e ao adolescente          : 2  
+ Centro-Oeste     :  4   Ciência e Tecnologia : 4   Assistência comunitária                         :16  
+ GOIÁS            :  2   Comércio e serviços  : 2   Assistência hospitalar e ambulatorial           : 7  
+ MARANHÃO         :  1   Comunicações         : 1   Atenção básica                                  : 7  
+ MATO GROSSO      :  2   Cultura              :29   Controle ambiental                              : 2  
+ MATÕES DO NORTE  :  0   Defesa nacional      :10   Defesa aérea                                    : 3  
+ MINAS GERAIS     :  3   Desporto e lazer     : 6   Defesa civil                                    : 5  
+ Nacional         :302   Direitos da cidadania:14   Defesa naval                                    : 1  
+ Nordeste         :  9   Educação             :31   Defesa terrestre                                : 3  
+ Norte            :  3   Encargos especiais   : 6   Desenvolvimento científico                      : 5  
+ PARÁ             :  1   Gestão ambiental     :22   Desenvolvimento tecnológico e engenharia        : 7  
+ PARAÍBA          :  1   Habitação            : 2   Desporto comunitário                            : 5  
+ PERNAMBUCO       :  2   Indústria            : 4   Desporto de rendimento                          : 1  
+ PORTO VELHO      :  1   Organização agrária  :11   Difusão cultural                                :18  
+ RIO GRANDE DO SUL:  5   Previdência social   : 4   Difusão do conhecimento científico e tecnológico: 1  
+ SANTA CATARINA   :  1   Saneamento           :40   Direitos individuais, coletivos e difusos       :15  
+ Sudeste          :  4   Saúde                :47   Educação básica                                 :11  
+ Sul              :  4   Segurança pública    :14   Educação de jovens e adultos                    : 1  
+ TIMON            :  0   Trabalho             : 2   Educação infantil                               : 4  
+                         Transporte           :44   Ensino profissional                             :10  
+                         Urbanismo            :21   Ensino superior                                 : 6  
+                                                    Extensão rural                                  : 7  
+                                                    Formação de recursos humanos                    : 2  
+                                                    Habitação urbana                                : 0  
+                                                    Informação e inteligência                       : 1  
+                                                    infra-estrutura urbana                          : 9  
+                                                    Irrigação                                       : 2  
+                                                    Meteorologia                                    : 2  
+                                                    Normatização e fiscalização                     : 3  
+                                                    Ordenamento territorial                         : 1  
+                                                    Outras transferências                           : 3  
+                                                    Outros encargos especiais                       : 4  
+                                                    Patrimônio histórico, artístico e arqueológico  :11  
+                                                    Planejamento e orçamento                        :10  
+                                                    Policiamento                                    : 7  
+                                                    Preservação e conservação ambiental             : 4  
+                                                    Previdência básica                              : 1  
+                                                    Promoção da produção agropecuária               : 8  
+                                                    Propriedade industrial                          : 1  
+                                                    Recursos hídricos                               :17  
+                                                    Reforma agrária                                 : 2  
+                                                    Representação judicial e extrajudicial          : 0  
+                                                    Saneamento básico rural                         : 9  
+                                                    Saneamento básico urbano                        :51  
+                                                    Serviços urbanos                                : 1  
+                                                    Suporte profilático e terapêutico               : 5  
+                                                    Tecnologia da informação                        : 2  
+                                                    Transporte aéreo                                : 1  
+                                                    Transporte ferroviário                          : 1  
+                                                    Transporte hidroviário                          : 1  
+                                                    Transporte rodoviário                           :25  
+                                                    Transportes coletivos urbanos                   : 7  
+                                                    Turismo                                         : 2  
+                                                    Vigilância epidemiológica                       : 1
+                                                     
+   empenhado            liquido               pago          
+ Min.   :0.000e+00   Min.   :        0   Min.   :        0  
+ 1st Qu.:3.928e+06   1st Qu.:    89239   1st Qu.:    20738  
+ Median :1.212e+07   Median :  2779932   Median :  2619393  
+ Mean   :5.613e+07   Mean   : 21542191   Mean   : 20142607  
+ 3rd Qu.:3.725e+07   3rd Qu.: 15495642   3rd Qu.: 15375222  
+ Max.   :2.242e+09   Max.   :973193846   Max.   :953258463  

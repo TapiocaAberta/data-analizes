@@ -1,0 +1,64 @@
+             localidade                   função                                              subfunção 
+ ALAGOAS          : 0   Administração        : 0   Administração geral                             : 1  
+ AMAPÁ            : 0   Agricultura          : 3   Alimentação e nutrição                          : 1  
+ CEARÁ            : 0   Assistência social   : 2   Assistência à criança e ao adolescente          : 0  
+ Centro-Oeste     : 0   Ciência e Tecnologia : 1   Assistência comunitária                         :13  
+ GOIÁS            : 0   Comércio e serviços  : 0   Assistência hospitalar e ambulatorial           : 4  
+ MARANHÃO         : 0   Comunicações         : 0   Atenção básica                                  : 4  
+ MATO GROSSO      : 0   Cultura              : 0   Controle ambiental                              : 0  
+ MATÕES DO NORTE  : 1   Defesa nacional      : 1   Defesa aérea                                    : 0  
+ MINAS GERAIS     : 0   Desporto e lazer     : 3   Defesa civil                                    : 0  
+ Nacional         :51   Direitos da cidadania: 0   Defesa naval                                    : 0  
+ Nordeste         : 0   Educação             : 1   Defesa terrestre                                : 0  
+ Norte            : 0   Encargos especiais   : 0   Desenvolvimento científico                      : 0  
+ PARÁ             : 0   Gestão ambiental     : 2   Desenvolvimento tecnológico e engenharia        : 1  
+ PARAÍBA          : 0   Habitação            : 1   Desporto comunitário                            : 3  
+ PERNAMBUCO       : 0   Indústria            : 0   Desporto de rendimento                          : 0  
+ PORTO VELHO      : 0   Organização agrária  : 5   Difusão cultural                                : 0  
+ RIO GRANDE DO SUL: 0   Previdência social   : 5   Difusão do conhecimento científico e tecnológico: 0  
+ SANTA CATARINA   : 0   Saneamento           : 1   Direitos individuais, coletivos e difusos       : 0  
+ Sudeste          : 0   Saúde                :10   Educação básica                                 : 1  
+ Sul              : 0   Segurança pública    : 0   Educação de jovens e adultos                    : 0  
+ TIMON            : 1   Trabalho             : 0   Educação infantil                               : 0  
+                        Transporte           : 0   Ensino profissional                             : 0  
+                        Urbanismo            :18   Ensino superior                                 : 0  
+                                                   Extensão rural                                  : 0  
+                                                   Formação de recursos humanos                    : 1  
+                                                   Habitação urbana                                : 1  
+                                                   Informação e inteligência                       : 0  
+                                                   infra-estrutura urbana                          : 6  
+                                                   Irrigação                                       : 0  
+                                                   Meteorologia                                    : 0  
+                                                   Normatização e fiscalização                     : 0  
+                                                   Ordenamento territorial                         : 3  
+                                                   Outras transferências                           : 0  
+                                                   Outros encargos especiais                       : 0  
+                                                   Patrimônio histórico, artístico e arqueológico  : 0  
+                                                   Planejamento e orçamento                        : 0  
+                                                   Policiamento                                    : 0  
+                                                   Preservação e conservação ambiental             : 0  
+                                                   Previdência básica                              : 1  
+                                                   Promoção da produção agropecuária               : 3  
+                                                   Propriedade industrial                          : 0  
+                                                   Recursos hídricos                               : 2  
+                                                   Reforma agrária                                 : 3  
+                                                   Representação judicial e extrajudicial          : 1  
+                                                   Saneamento básico rural                         : 0  
+                                                   Saneamento básico urbano                        : 3  
+                                                   Serviços urbanos                                : 0  
+                                                   Suporte profilático e terapêutico               : 0  
+                                                   Tecnologia da informação                        : 1  
+                                                   Transporte aéreo                                : 0  
+                                                   Transporte ferroviário                          : 0  
+                                                   Transporte hidroviário                          : 0  
+                                                   Transporte rodoviário                           : 0  
+                                                   Transportes coletivos urbanos                   : 0  
+                                                   Turismo                                         : 0  
+                                                   Vigilância epidemiológica                       : 0  
+   empenhado            liquido               pago          
+ Min.   :0.000e+00   Min.   :0.000e+00   Min.   :0.000e+00  
+ 1st Qu.:5.000e+06   1st Qu.:0.000e+00   1st Qu.:0.000e+00  
+ Median :3.536e+07   Median :0.000e+00   Median :0.000e+00  
+ Mean   :3.155e+08   Mean   :1.207e+08   Mean   :1.206e+08  
+ 3rd Qu.:1.279e+08   3rd Qu.:1.740e+07   3rd Qu.:1.740e+07  
+ Max.   :4.389e+09   Max.   :3.589e+09   Max.   :3.589e+09  

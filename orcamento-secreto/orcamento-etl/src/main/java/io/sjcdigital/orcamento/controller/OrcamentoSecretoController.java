@@ -33,7 +33,7 @@ public class OrcamentoSecretoController {
      */
     private static final String PATH = "/home/pesilva/workspace/code/pessoal/data-analizes/orcamento-secreto/";
     private static final Logger LOGGER = LoggerFactory.getLogger(OrcamentoSecretoController.class);
-    private static final String EMENDAS_CSV = PATH + "data/emendas_test.csv";
+    private static final String EMENDAS_CSV = PATH + "data/emendas.csv";
 
     public static void main(String[] args) {
         LOGGER.info("Iniciando CSV Parser!");
@@ -106,6 +106,8 @@ public class OrcamentoSecretoController {
     private static Emendas criaEmenda(long i, String[] linha) {
 
         String codigoEmenda = linha[0] + "8100" + linha[2];
+        
+        System.out.println("Buscando dados para emenda " + codigoEmenda);
         
         DocumentoRelacionadoController docRelacionadoController = new DocumentoRelacionadoController();
         List<Documentos> relacionados = docRelacionadoController.buscaTodosDocumentosRelacionados(codigoEmenda);
