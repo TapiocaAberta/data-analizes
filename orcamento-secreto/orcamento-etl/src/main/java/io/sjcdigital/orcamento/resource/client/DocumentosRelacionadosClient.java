@@ -21,10 +21,10 @@ public interface DocumentosRelacionadosClient {
     @GET
     @Path("resultado")
     @Produces({ MediaType.APPLICATION_JSON})
-    public DocumentosRelacionadosPojo pegaDocs(   @QueryParam("offset") int offset, 
-                                @QueryParam("codigo") String codigo, 
-                                @QueryParam("paginacaoSimples") boolean paginacaoSimples, 
-                                @QueryParam("tamanhoPagina") int tamanhoPagina, 
-                                @QueryParam("direcaoOrdenacao") String direcaoOrdenacao, 
-                                @QueryParam("colunaOrdenacao") String colunaOrdenacao );
+    public DocumentosRelacionadosPojo pegaDocs( @QueryParam("offset") int offset, 
+                                                @QueryParam("codigo") String codigo, 
+                                                @QueryParam("paginacaoSimples") boolean paginacaoSimples, 
+                                                @QueryParam("tamanhoPagina") int tamanhoPagina, 
+                                                @QueryParam("direcaoOrdenacao") String direcaoOrdenacao, 
+                                                @QueryParam("colunaOrdenacao") String colunaOrdenacao );
 }

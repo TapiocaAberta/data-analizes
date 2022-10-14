@@ -16,6 +16,8 @@ import io.sjcdigital.orcamento.model.entity.OrgaoPagador;
  */
 public class DetalhesDocumentoController {
     
+    public static final String AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36";
+    
     /**
      * @param detalheURL
      * @param documento
@@ -24,7 +26,8 @@ public class DetalhesDocumentoController {
         
         try {
             
-            Document doc = Jsoup.connect(detalheURL).get();
+            Document doc = Jsoup.connect(detalheURL).userAgent(AGENT)
+                                                    .get();
             
             //Apenas Dados tabelados
             Elements dadosTabelados = doc.getElementsByClass("dados-tabelados");
@@ -42,6 +45,7 @@ public class DetalhesDocumentoController {
             Favorecido favorecido = new Favorecido();
             favorecido.docFavorecido = favorecidoDiv.select("strong:contains(CPF/CNPJ/Outros)").next("span").text();
             favorecido.nome = favorecidoDiv.select("strong:contains(Nome)").next("span").text();
+            favorecido.url = favorecidoDiv.select("strong:contains(CPF/CNPJ/Outros)").next("span").select("a").attr("abs:href");
             
             documento.favorecido = favorecido;
             
@@ -52,6 +56,7 @@ public class DetalhesDocumentoController {
             Elements orgapSuperiorDiv = pagadorDiv.select("strong:contains(Órgão Superior)");
             orgaoPagador.orgaoSuperiorCod = orgapSuperiorDiv.next("span").text();
             orgaoPagador.orgaoSuperiorNome = orgapSuperiorDiv.next("span").next("span").text();
+            orgaoPagador.url = orgapSuperiorDiv.next("span").next("span").select("a").attr("abs:href");
            
             Elements entidadeVinculadaDiv = pagadorDiv.select("strong:contains(Órgão / Entidade Vinculada)");
             orgaoPagador.entidadeVinculadaCod = entidadeVinculadaDiv.next("span").text();
@@ -64,6 +69,7 @@ public class DetalhesDocumentoController {
             Elements gestaoDiv = pagadorDiv.select("strong:contains(Gestão)");
             orgaoPagador.gestaoCod = gestaoDiv.next("span").text();
             orgaoPagador.gestaoNome = gestaoDiv.next("span").next("span").text();
+            
             
             documento.orgaopagador = orgaoPagador;
             

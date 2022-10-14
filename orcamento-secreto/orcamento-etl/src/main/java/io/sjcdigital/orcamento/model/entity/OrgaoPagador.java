@@ -16,5 +16,6 @@ public class OrgaoPagador {
     public String unidadeGestoraNome;
     public String gestaoCod;
     public String gestaoNome;
+    public String url;
 
 }

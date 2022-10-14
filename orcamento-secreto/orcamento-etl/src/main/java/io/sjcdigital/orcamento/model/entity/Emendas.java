@@ -3,8 +3,6 @@ package io.sjcdigital.orcamento.model.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-
 /**
  * @author Pedro Hos <pedro-hos@outlook.com>
  *
@@ -26,7 +24,6 @@ public class Emendas {
     
     public Emendas() {}
 
-    @JsonCreator
     public Emendas(Long id, String ano, String autor, String numeroEmenda, String localidade, String funcao,
             String subfuncao, String empenhado, String liquido, String pago, String codigoEmenda, List<Documentos> documentos) {
         

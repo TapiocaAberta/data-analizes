@@ -8,5 +8,6 @@ public class Favorecido {
     
     public String docFavorecido;
     public String nome;
+    public String url;
 
 }

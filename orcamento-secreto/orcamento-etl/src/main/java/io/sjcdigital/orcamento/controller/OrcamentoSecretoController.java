@@ -1,12 +1,14 @@
 package io.sjcdigital.orcamento.controller;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,38 +30,30 @@ import io.sjcdigital.orcamento.model.entity.Emendas;
  */
 public class OrcamentoSecretoController {
 
-    /**
-     * 
-     */
-    private static final String PATH = "/home/pesilva/workspace/code/pessoal/data-analizes/orcamento-secreto/";
     private static final Logger LOGGER = LoggerFactory.getLogger(OrcamentoSecretoController.class);
+    
+    private static final String PATH = "/home/pesilva/workspace/code/pessoal/data-analizes/orcamento-secreto/";
     private static final String EMENDAS_CSV = PATH + "data/emendas.csv";
 
     public static void main(String[] args) {
-        LOGGER.info("Iniciando CSV Parser!");
-        salvaJSON(readCSV());
-        
+        System.out.println("Iniciando ...");
+        montaEmendasDeRelator();
     }
 
     /**
-     * @param readCSV
+     * @param emenda
      */
-    private static void salvaJSON(List<Emendas> readCSV) {
-        
-        for (Emendas emendas : readCSV) {
-            String directoryName = PATH + "data-json/" + emendas.ano + "/";
-            String arquivoNome = emendas.id + "-" + "-" + emendas.numeroEmenda + "-" + emendas.numeroEmenda;
-            createJsonFile(directoryName, arquivoNome, emendas);
-        }
-        
+    private static void salvaJSON(Emendas emenda) {
+        String directoryName = PATH + "data-json-new/" + emenda.ano + "/";
+        String fileName = emenda.id + "-" + emenda.numeroEmenda;
+        createJsonFile(directoryName, fileName, emenda);
     }
     
     private static void createJsonFile(String directoryName, String arquivoNome, Emendas emendas) {
         
         try {
-            
+            createDirectoryIfDoesntExists(directoryName);
             Files.write(Paths.get(directoryName + arquivoNome + ".json"), new ObjectMapper().writeValueAsString(emendas).getBytes());
-            
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -67,11 +61,19 @@ public class OrcamentoSecretoController {
         }
     }
     
+    protected static void createDirectoryIfDoesntExists(String directoryName) {
+        
+        LOGGER.info("Files will be save into " + directoryName + " if you need change it, replace the 'file.path' argument on application.properties file");
 
-    private static List<Emendas> readCSV() {
-
-        List<Emendas> emendas = new ArrayList<>();
-
+        var directory = new File(directoryName);
+        
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+    }
+    
+    private static void montaEmendasDeRelator() {
+        
         try {
 
             FileReader filereader = new FileReader(EMENDAS_CSV);
@@ -80,9 +82,15 @@ public class OrcamentoSecretoController {
 
             List<String[]> readAll = csvReader.readAll();
             
+            ThreadPoolExecutor executor =  (ThreadPoolExecutor) Executors.newFixedThreadPool(readAll.size());
+            
             for(int i = 0; i < readAll.size(); i++) {
                 String[] linha = readAll.get(i);
-                emendas.add(criaEmenda(i, linha));
+                
+                executor.submit(() -> {
+                    criaEmenda(readAll.indexOf(linha), linha);
+                });
+                
             }
 
         } catch (FileNotFoundException e) {
@@ -93,29 +101,28 @@ public class OrcamentoSecretoController {
             LOGGER.error(e.getMessage());
         }
 
-        return emendas;
-
     }
 
     /**
-     * @param i 
+     * @param id 
      * @param linha
      * @param contador
      * @return
      */
-    private static Emendas criaEmenda(long i, String[] linha) {
+    private static void criaEmenda(long id, String[] linha) {
 
         String codigoEmenda = linha[0] + "8100" + linha[2];
         
-        System.out.println("Buscando dados para emenda " + codigoEmenda);
+        System.out.println("[" + Thread.currentThread().getName() +  "] Buscando dados para emenda " + codigoEmenda + " id " + id);
         
         DocumentoRelacionadoController docRelacionadoController = new DocumentoRelacionadoController();
         List<Documentos> relacionados = docRelacionadoController.buscaTodosDocumentosRelacionados(codigoEmenda);
         
-        Emendas emenda = new Emendas(i, linha[0], linha[1],
-                linha[2], linha[3], linha[4], linha[5], linha[6], linha[7], linha[8], codigoEmenda, relacionados);
+        Emendas emenda = new Emendas(id, linha[0], linha[1], linha[2], linha[3], linha[4], linha[5], linha[6], linha[7], 
+                                     linha[8], codigoEmenda, relacionados);
+        
+        salvaJSON(emenda);
 
-        return emenda;
     }
 
 }

@@ -23,25 +23,20 @@ public class DocumentoRelacionadoController {
     
     public static final String PATH = "https://www.portaltransparencia.gov.br";
     public static final String DOCUMENTO_PATH = PATH + "/despesas/documento/";
+    public static final  int QUANTIDADE_POR_PAGINA = 1000;
+    
     public DetalhesDocumentoController detalhesDoc;
     
     public DocumentoRelacionadoController() {
-        super();
         detalhesDoc = new DetalhesDocumentoController();
-    }
-
-    public static void main(String[] args) {
-        DocumentoRelacionadoController c = new DocumentoRelacionadoController();
-        DocumentosRelacionadosPojo docsRelacionads = c.buscaDocumentos(200, "202181000674");
-        System.out.println(docsRelacionads.getData().size());
     }
     
     public List <Documentos> buscaTodosDocumentosRelacionados(final String codigoEmenda) {
         
         int offset = 0;
-        int qntPag = 100;
         
         List <Documentos> documentos = new ArrayList<>();
+        
         
         while(true) {
             
@@ -53,10 +48,11 @@ public class DocumentoRelacionadoController {
             
             documentos.addAll(criaDocumentos(docRelacionado.getData()));
             
-            offset = offset + qntPag;
+            offset = offset + QUANTIDADE_POR_PAGINA;
             
         }
         
+        System.out.println(Thread.currentThread().getName() + " Finalizando Processo!");
         return documentos;
     }
     
@@ -77,9 +73,7 @@ public class DocumentoRelacionadoController {
             documento.codigoDocumentoResumido = d.getCodigoDocumentoResumido();
             documento.especieTipo = d.getEspecieTipo();
             
-            String detalheURL = pegaURLDocumento(documento.fase, documento.codigoDocumento);
-            
-            detalhesDoc.preencheDetalhes(detalheURL, documento);
+            detalhesDoc.preencheDetalhes(pegaURLDocumento(documento.fase, documento.codigoDocumento), documento);
             
             documentos.add(documento);
         });
@@ -88,8 +82,11 @@ public class DocumentoRelacionadoController {
     }
 
     public DocumentosRelacionadosPojo buscaDocumentos(final int offset, final String codigoEmenda) {
-        DocumentosRelacionadosClient proxy = getTarget().proxy(DocumentosRelacionadosClient.class);
-        return proxy.pegaDocs(offset, codigoEmenda, false, 100, "asc", "data");
+        ResteasyWebTarget target = getTarget();
+        DocumentosRelacionadosClient proxy = target.proxy(DocumentosRelacionadosClient.class);
+        DocumentosRelacionadosPojo pojo = proxy.pegaDocs(offset, codigoEmenda, false, QUANTIDADE_POR_PAGINA, "asc", "data");
+        target.getResteasyClient().close();
+        return pojo;
     }
     
     private static ResteasyWebTarget getTarget() {
