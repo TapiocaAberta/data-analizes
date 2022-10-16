@@ -1,17 +1,15 @@
-package io.sjcdigital.orcamento.controller;
+package io.sjcdigital.orcamento.service;
+
+import static io.sjcdigital.orcamento.utils.PortalTransparenciaConstantes.DOCUMENTO_URL;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.ws.rs.core.UriBuilder;
-
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 
 import io.sjcdigital.orcamento.model.entity.Documentos;
-import io.sjcdigital.orcamento.model.pojo.DataPojo;
+import io.sjcdigital.orcamento.model.pojo.DocumentosDataPojo;
 import io.sjcdigital.orcamento.model.pojo.DocumentosRelacionadosPojo;
 import io.sjcdigital.orcamento.resource.client.DocumentosRelacionadosClient;
 
@@ -19,24 +17,19 @@ import io.sjcdigital.orcamento.resource.client.DocumentosRelacionadosClient;
  * @author Pedro Hos <pedro-hos@outlook.com>
  *
  */
-public class DocumentoRelacionadoController {
+public class DocumentoRelacionadoService extends PortalTransparencia {
     
-    public static final String PATH = "https://www.portaltransparencia.gov.br";
-    public static final String DOCUMENTO_PATH = PATH + "/despesas/documento/";
-    public static final  int QUANTIDADE_POR_PAGINA = 1000;
+    public DetalhesDocumentoService detalhesDoc;
     
-    public DetalhesDocumentoController detalhesDoc;
-    
-    public DocumentoRelacionadoController() {
-        detalhesDoc = new DetalhesDocumentoController();
+    public DocumentoRelacionadoService() {
+        detalhesDoc = new DetalhesDocumentoService();
     }
     
     public List <Documentos> buscaTodosDocumentosRelacionados(final String codigoEmenda) {
         
+        System.out.println("Iniciando Busca de Documentos para " + codigoEmenda);
         int offset = 0;
-        
         List <Documentos> documentos = new ArrayList<>();
-        
         
         while(true) {
             
@@ -47,12 +40,11 @@ public class DocumentoRelacionadoController {
             }
             
             documentos.addAll(criaDocumentos(docRelacionado.getData()));
-            
-            offset = offset + QUANTIDADE_POR_PAGINA;
-            
+            offset = offset +  DocumentosRelacionadosClient.TAMANHO_PAGINA;
         }
         
-        System.out.println(Thread.currentThread().getName() + " Finalizando Processo!");
+        System.out.println(Thread.currentThread().getName() + " Finalizando Processo! " + codigoEmenda);
+        
         return documentos;
     }
     
@@ -60,7 +52,7 @@ public class DocumentoRelacionadoController {
      * @param data
      * @return
      */
-    private Collection<? extends Documentos> criaDocumentos(List<DataPojo> data) {
+    private Collection<? extends Documentos> criaDocumentos(List<DocumentosDataPojo> data) {
         
         List <Documentos> documentos = new ArrayList<>();
         
@@ -84,26 +76,25 @@ public class DocumentoRelacionadoController {
     public DocumentosRelacionadosPojo buscaDocumentos(final int offset, final String codigoEmenda) {
         ResteasyWebTarget target = getTarget();
         DocumentosRelacionadosClient proxy = target.proxy(DocumentosRelacionadosClient.class);
-        DocumentosRelacionadosPojo pojo = proxy.pegaDocs(offset, codigoEmenda, false, QUANTIDADE_POR_PAGINA, "asc", "data");
+        DocumentosRelacionadosPojo pojo = proxy.pegaDocs( offset, codigoEmenda, 
+                                                          DocumentosRelacionadosClient.PAGINACAO_SIMPLES, 
+                                                          DocumentosRelacionadosClient.TAMANHO_PAGINA, 
+                                                          DocumentosRelacionadosClient.DIRECAO_ORDENACAO, 
+                                                          DocumentosRelacionadosClient.COLUNA_ORDENACAO );
         target.getResteasyClient().close();
         return pojo;
     }
     
-    private static ResteasyWebTarget getTarget() {
-        ResteasyClient client = new ResteasyClientBuilderImpl().build();
-        ResteasyWebTarget target = client.target(UriBuilder.fromPath(PATH));
-        return target;
-    }
     
     private static String pegaURLDocumento(final String fase, final String codigoDocumento) {
         
         switch (fase) {
         case "Pagamento":
-            return DOCUMENTO_PATH + "pagamento/" + codigoDocumento;
+            return DOCUMENTO_URL + "pagamento/" + codigoDocumento;
         case "Empenho":
-            return DOCUMENTO_PATH + "empenho/" + codigoDocumento;
+            return DOCUMENTO_URL + "empenho/" + codigoDocumento;
         case "Liquidação":
-            return DOCUMENTO_PATH + "liquidacao/" + codigoDocumento;
+            return DOCUMENTO_URL + "liquidacao/" + codigoDocumento;
         default:
             return "";
         }

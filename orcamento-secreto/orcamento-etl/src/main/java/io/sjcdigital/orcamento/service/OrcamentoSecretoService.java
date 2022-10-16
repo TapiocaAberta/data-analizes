@@ -1,20 +1,18 @@
-package io.sjcdigital.orcamento.controller;
+package io.sjcdigital.orcamento.service;
 
-import java.io.File;
+import static io.sjcdigital.orcamento.utils.Constantes.*;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
@@ -23,53 +21,54 @@ import com.opencsv.exceptions.CsvException;
 
 import io.sjcdigital.orcamento.model.entity.Documentos;
 import io.sjcdigital.orcamento.model.entity.Emendas;
+import io.sjcdigital.orcamento.model.pojo.EmendasPojo;
+import io.sjcdigital.orcamento.resource.client.EmendaClient;
+import io.sjcdigital.orcamento.utils.Constantes;
+import io.sjcdigital.orcamento.utils.FileUtil;
 
 /**
  * @author Pedro Hos <pedro-hos@outlook.com>
  *
  */
-public class OrcamentoSecretoController {
+public class OrcamentoSecretoService extends PortalTransparencia {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrcamentoSecretoController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrcamentoSecretoService.class);
     
-    private static final String PATH = "/home/pesilva/workspace/code/pessoal/data-analizes/orcamento-secreto/";
-    private static final String EMENDAS_CSV = PATH + "data/emendas.csv";
-
     public static void main(String[] args) {
         System.out.println("Iniciando ...");
-        montaEmendasDeRelator();
-    }
-
-    /**
-     * @param emenda
-     */
-    private static void salvaJSON(Emendas emenda) {
-        String directoryName = PATH + "data-json-new/" + emenda.ano + "/";
-        String fileName = emenda.id + "-" + emenda.numeroEmenda;
-        createJsonFile(directoryName, fileName, emenda);
+        
+        OrcamentoSecretoService service = new OrcamentoSecretoService();
+        service.buscaTodasEmendasRelator();
+        
     }
     
-    private static void createJsonFile(String directoryName, String arquivoNome, Emendas emendas) {
+    public void buscaTodasEmendasRelator() {
         
-        try {
-            createDirectoryIfDoesntExists(directoryName);
-            Files.write(Paths.get(directoryName + arquivoNome + ".json"), new ObjectMapper().writeValueAsString(emendas).getBytes());
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        int offset = 0;
+        
+        while(offset < 10) {
+            
+            EmendasPojo emendas = buscaEmendas(offset);
+            
+            if(emendas.getData().isEmpty()) {
+                break;
+            }
+            
+            FileUtil.salvaJSON(emendas, ORIGINAIS_PATH + "emendas/", offset + "-" + EmendaClient.TAMANHO_PAGINA);
+            offset = offset + EmendaClient.TAMANHO_PAGINA;
         }
+        
     }
     
-    protected static void createDirectoryIfDoesntExists(String directoryName) {
-        
-        LOGGER.info("Files will be save into " + directoryName + " if you need change it, replace the 'file.path' argument on application.properties file");
-
-        var directory = new File(directoryName);
-        
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
+    private EmendasPojo buscaEmendas(final int offset) {
+        ResteasyWebTarget target = getTarget();
+        EmendaClient proxy = target.proxy(EmendaClient.class);
+        EmendasPojo emendas = proxy.getEmendas( offset, EmendaClient.PAGINACAO_SIMPLES, EmendaClient.TAMANHO_PAGINA, 
+                                                EmendaClient.DIRECAO_ORDENACAO, EmendaClient.COLUNA_ORDENACAO, 
+                                                EmendaClient.ANO_DE, EmendaClient.ANO_ATE,  EmendaClient.AUTOR, 
+                                                EmendaClient.COLUNAS_SELECIONADAS);
+        target.getResteasyClient().close();
+        return emendas;
     }
     
     private static void montaEmendasDeRelator() {
@@ -115,13 +114,16 @@ public class OrcamentoSecretoController {
         
         System.out.println("[" + Thread.currentThread().getName() +  "] Buscando dados para emenda " + codigoEmenda + " id " + id);
         
-        DocumentoRelacionadoController docRelacionadoController = new DocumentoRelacionadoController();
+        DocumentoRelacionadoService docRelacionadoController = new DocumentoRelacionadoService();
         List<Documentos> relacionados = docRelacionadoController.buscaTodosDocumentosRelacionados(codigoEmenda);
         
         Emendas emenda = new Emendas(id, linha[0], linha[1], linha[2], linha[3], linha[4], linha[5], linha[6], linha[7], 
                                      linha[8], codigoEmenda, relacionados);
         
-        salvaJSON(emenda);
+        String directoryName = PATH + "data-json-new/" + emenda.ano + "/";
+        String fileName = emenda.id + "-" + emenda.numeroEmenda;
+        
+        FileUtil.salvaJSON(emenda, directoryName, fileName);
 
     }
 

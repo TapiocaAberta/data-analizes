@@ -18,6 +18,11 @@ import io.sjcdigital.orcamento.model.pojo.DocumentosRelacionadosPojo;
 @RegisterRestClient(configKey="portaltransparencia-api")
 public interface DocumentosRelacionadosClient {
     
+    public static final  int TAMANHO_PAGINA = 100;
+    public static final boolean PAGINACAO_SIMPLES = false;
+    public static final String COLUNA_ORDENACAO = "data";
+    public static final String DIRECAO_ORDENACAO = "asc";
+    
     @GET
     @Path("resultado")
     @Produces({ MediaType.APPLICATION_JSON})

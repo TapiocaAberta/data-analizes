@@ -1,4 +1,4 @@
-package io.sjcdigital.orcamento.controller;
+package io.sjcdigital.orcamento.service;
 
 import java.io.IOException;
 
@@ -14,9 +14,10 @@ import io.sjcdigital.orcamento.model.entity.OrgaoPagador;
  * @author Pedro Hos <pedro-hos@outlook.com>
  *
  */
-public class DetalhesDocumentoController {
+public class DetalhesDocumentoService {
     
     public static final String AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36";
+    public static final int TIMEOUT = 1000000;
     
     /**
      * @param detalheURL
@@ -27,6 +28,8 @@ public class DetalhesDocumentoController {
         try {
             
             Document doc = Jsoup.connect(detalheURL).userAgent(AGENT)
+                                                    .timeout(TIMEOUT)
+                                                    .followRedirects(true)
                                                     .get();
             
             //Apenas Dados tabelados

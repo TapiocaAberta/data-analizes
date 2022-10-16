@@ -20,6 +20,11 @@ public class Emendas {
     public String liquido;
     public String pago;
     public String codigoEmenda;
+    public String valorRestoInscrito;
+    public String valorRestoCancelado;
+    public String valorRestoPago;
+    public String valorRestoAPagar;
+    
     public List<Documentos> documentos = new ArrayList<>();
     
     public Emendas() {}

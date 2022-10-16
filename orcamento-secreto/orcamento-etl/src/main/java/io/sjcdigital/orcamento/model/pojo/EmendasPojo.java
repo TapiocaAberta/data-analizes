@@ -6,13 +6,13 @@ import java.util.List;
  * @author Pedro Hos <pedro-hos@outlook.com>
  *
  */
-public class DocumentosRelacionadosPojo {
-
+public class EmendasPojo {
+    
     private String draw;
     private String recordsTotal;
     private String recordsFiltered;
     
-    private List<DocumentosDataPojo> data;
+    private List<EmendasDataPojo> data;
 
     /**
      * @return the draw
@@ -26,20 +26,6 @@ public class DocumentosRelacionadosPojo {
      */
     public void setDraw(String draw) {
         this.draw = draw;
-    }
-
-    /**
-     * @return the data
-     */
-    public List<DocumentosDataPojo> getData() {
-        return data;
-    }
-
-    /**
-     * @param data the data to set
-     */
-    public void setData(List<DocumentosDataPojo> data) {
-        this.data = data;
     }
 
     /**
@@ -68,6 +54,20 @@ public class DocumentosRelacionadosPojo {
      */
     public void setRecordsFiltered(String recordsFiltered) {
         this.recordsFiltered = recordsFiltered;
+    }
+
+    /**
+     * @return the data
+     */
+    public List<EmendasDataPojo> getData() {
+        return data;
+    }
+
+    /**
+     * @param data the data to set
+     */
+    public void setData(List<EmendasDataPojo> data) {
+        this.data = data;
     }
 
 }
