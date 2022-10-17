@@ -23,16 +23,16 @@ public interface EmendaClient {
 
     
     public static final boolean PAGINACAO_SIMPLES = false;
-    public static final int TAMANHO_PAGINA = 100;
+    public static final int TAMANHO_PAGINA = 5;
     public static final String DIRECAO_ORDENACAO = "desc";
     public static final String ANO_DE = "2020";
     public static final String ANO_ATE = "2022";
     public static final String COLUNA_ORDENACAO = "valorEmpenhado";
     public static final String AUTOR = "8100";
     public static final List<String> COLUNAS_SELECIONADAS = Arrays.asList("valorRestoInscrito", "valorRestoCancelado", "valorRestoPago", 
-                                                                                  "valorRestoAPagar", "codigoEmenda", "ano", "autor", "numeroEmenda",
-                                                                                  "localidadeDoGasto", "funcao", "subfuncao", "valorEmpenhado",
-                                                                                  "valorLiquidado", "valorPago");
+                                                                          "valorRestoAPagar", "codigoEmenda", "ano", "autor", "numeroEmenda",
+                                                                          "localidadeDoGasto", "funcao", "subfuncao", "valorEmpenhado",
+                                                                          "valorLiquidado", "valorPago");
     
     @GET
     @Path("resultado")

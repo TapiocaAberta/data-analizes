@@ -49,18 +49,25 @@ public class OrcamentoSecretoService extends PortalTransparencia {
     }
 
     @Transactional
-    public void processaEmenda(EmendasPojo pojo) throws InterruptedException {
+    public void processaEmenda(EmendasPojo pojo) {
+        
         LOGGER.info("Processesando Emendas ..." + pojo.getData().size());
-        List<Emendas> emendas = Emendas.fromEmendaPojo(pojo);
-        emendas.forEach(e -> {  emendasRepository.persistAndFlush(e); });
-        documentosRelacionadosService.buscaTodosDocumentosRelacionados(emendas);
+
+        try {
+            List<Emendas> emendas = Emendas.fromEmendaPojo(pojo);
+            emendasRepository.persist(emendas);
+            documentosRelacionadosService.buscaTodosDocumentosRelacionados(emendas);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void buscaTodasEmendasRelator() {
 
         int offset = 0;
 
-        while (true) {
+        while (offset < 10) {
 
             EmendasPojo emendas = buscaEmendas(offset);
 
