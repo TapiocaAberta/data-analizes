@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -16,8 +13,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 public class FileUtil {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
+    
+    public static void salvaHTML(String page, String directoryName, String filename) {
+        
+        try {
+            filename = filename.contains(".html") ? filename : filename + ".html";
+            createDirectoryIfDoesntExists(directoryName);
+            Files.write(Paths.get(directoryName + filename), page.getBytes());
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+    }
 
     /**
      * @param object
@@ -26,7 +34,8 @@ public class FileUtil {
 
         try {
             createDirectoryIfDoesntExists(directoryName);
-            Files.write(Paths.get(directoryName + filename + ".json"), new ObjectMapper().writeValueAsString(object).getBytes());
+            filename = filename.contains(".json") ? filename : filename + ".json";
+            Files.write(Paths.get(directoryName + filename), new ObjectMapper().writeValueAsString(object).getBytes());
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -35,10 +44,10 @@ public class FileUtil {
 
     }
 
+    /**
+     * @param directoryName
+     */
     protected static void createDirectoryIfDoesntExists(String directoryName) {
-
-        LOGGER.info("Files will be save into " + directoryName
-                + " if you need change it, replace the 'file.path' argument on application.properties file");
 
         var directory = new File(directoryName);
 

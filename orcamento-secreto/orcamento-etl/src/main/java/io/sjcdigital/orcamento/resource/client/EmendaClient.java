@@ -23,7 +23,7 @@ public interface EmendaClient {
 
     
     public static final boolean PAGINACAO_SIMPLES = false;
-    public static final int TAMANHO_PAGINA = 5; //TODO: Mudar para 50
+    public static final int TAMANHO_PAGINA = 100;
     public static final String DIRECAO_ORDENACAO = "desc";
     public static final String ANO_DE = "2020";
     public static final String ANO_ATE = "2022";

@@ -1,78 +1,86 @@
 package io.sjcdigital.orcamento.service;
 
-import static io.sjcdigital.orcamento.utils.PortalTransparenciaConstantes.DOCUMENTO_URL;
+import static io.sjcdigital.orcamento.utils.Constantes.DOC_RELACIONADOS_PATH;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.transaction.Transactional;
 
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import io.sjcdigital.orcamento.model.entity.Documentos;
-import io.sjcdigital.orcamento.model.pojo.DocumentosDataPojo;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import io.sjcdigital.orcamento.model.entity.Emendas;
 import io.sjcdigital.orcamento.model.pojo.DocumentosRelacionadosPojo;
+import io.sjcdigital.orcamento.model.repository.EmendasRepository;
 import io.sjcdigital.orcamento.resource.client.DocumentosRelacionadosClient;
+import io.sjcdigital.orcamento.utils.Constantes;
+import io.sjcdigital.orcamento.utils.FileUtil;
 
 /**
  * @author Pedro Hos <pedro-hos@outlook.com>
  *
  */
+@ApplicationScoped
+@Named("documentosRelacionadosBean")
+@RegisterForReflection
 public class DocumentoRelacionadoService extends PortalTransparencia {
     
-    public DetalhesDocumentoService detalhesDoc;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DocumentoRelacionadoService.class);
     
-    public DocumentoRelacionadoService() {
-        detalhesDoc = new DetalhesDocumentoService();
+    @Inject DetalhesDocumentoService detalhesDoc;
+    @Inject EmendasRepository emendaReporitory;
+    
+    public void buscaTodosDocumentosRelacionados(final List<Emendas> emendas) {
+        emendas.forEach(e -> buscaDocumentosRelacionado(e.id, e.codigoEmenda));
     }
     
-    public List <Documentos> buscaTodosDocumentosRelacionados(final String codigoEmenda) {
+    /**
+     * @param id
+     * @param codigoEmenda
+     */
+    private void buscaDocumentosRelacionado(Long idEmenda, String codigoEmenda) {
         
-        System.out.println("Iniciando Busca de Documentos para " + codigoEmenda);
+        LOGGER.info("Iniciando Busca de Documentos para " + codigoEmenda + " id Emenda: " + idEmenda);
+        
         int offset = 0;
-        List <Documentos> documentos = new ArrayList<>();
         
         while(true) {
             
             DocumentosRelacionadosPojo docRelacionado = buscaDocumentos(offset, codigoEmenda);
+            docRelacionado.setIdEmenda(idEmenda);
             
             if(docRelacionado.getData().size() == 0) {
                 break;
             }
             
-            documentos.addAll(criaDocumentos(docRelacionado.getData()));
+            FileUtil.salvaJSON(docRelacionado, DOC_RELACIONADOS_PATH, idEmenda + "-" + codigoEmenda);
             offset = offset +  DocumentosRelacionadosClient.TAMANHO_PAGINA;
         }
-        
-        System.out.println(Thread.currentThread().getName() + " Finalizando Processo! " + codigoEmenda);
-        
-        return documentos;
     }
     
-    /**
-     * @param data
-     * @return
-     */
-    private Collection<? extends Documentos> criaDocumentos(List<DocumentosDataPojo> data) {
+    @Transactional
+    public void processaDocumentosRelacionados(DocumentosRelacionadosPojo pojo, String fileName) {
+        LOGGER.info("Processando Documentos Relacionados");
         
-        List <Documentos> documentos = new ArrayList<>();
+        Emendas emenda = emendaReporitory.findById(pojo.getIdEmenda());
         
-        data.forEach(d -> {
-            
-            Documentos documento = new Documentos();
-            documento.data = d.getData();
-            documento.fase = d.getFase();
-            documento.codigoDocumento = d.getCodigoDocumento();
-            documento.codigoDocumentoResumido = d.getCodigoDocumentoResumido();
-            documento.especieTipo = d.getEspecieTipo();
-            
-            detalhesDoc.preencheDetalhes(pegaURLDocumento(documento.fase, documento.codigoDocumento), documento);
-            
-            documentos.add(documento);
-        });
+        if(Objects.isNull(emenda)) {
+            LOGGER.info("[RETRY] Emenda não encontrada - " + pojo.getIdEmenda());
+            FileUtil.salvaJSON(pojo, DOC_RELACIONADOS_PATH + Constantes.RETRY_FOLDER, fileName);
+        } else {
+            emenda.documentos.addAll(Emendas.criaDocumentos(pojo, emenda));
+            emendaReporitory.persistAndFlush(emenda);
+            detalhesDoc.salvaPaginaDetalhes(pojo);
+        }
         
-        return documentos;
     }
-
+    
     public DocumentosRelacionadosPojo buscaDocumentos(final int offset, final String codigoEmenda) {
         ResteasyWebTarget target = getTarget();
         DocumentosRelacionadosClient proxy = target.proxy(DocumentosRelacionadosClient.class);
@@ -86,19 +94,6 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
     }
     
     
-    private static String pegaURLDocumento(final String fase, final String codigoDocumento) {
-        
-        switch (fase) {
-        case "Pagamento":
-            return DOCUMENTO_URL + "pagamento/" + codigoDocumento;
-        case "Empenho":
-            return DOCUMENTO_URL + "empenho/" + codigoDocumento;
-        case "Liquidação":
-            return DOCUMENTO_URL + "liquidacao/" + codigoDocumento;
-        default:
-            return "";
-        }
-        
-    }
+    
 
 }

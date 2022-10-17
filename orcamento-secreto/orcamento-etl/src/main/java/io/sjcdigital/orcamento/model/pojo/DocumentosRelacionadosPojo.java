@@ -8,6 +8,7 @@ import java.util.List;
  */
 public class DocumentosRelacionadosPojo {
 
+    private Long idEmenda;
     private String draw;
     private String recordsTotal;
     private String recordsFiltered;
@@ -68,6 +69,20 @@ public class DocumentosRelacionadosPojo {
      */
     public void setRecordsFiltered(String recordsFiltered) {
         this.recordsFiltered = recordsFiltered;
+    }
+
+    /**
+     * @return the idEmenda
+     */
+    public Long getIdEmenda() {
+        return idEmenda;
+    }
+
+    /**
+     * @param idEmenda the idEmenda to set
+     */
+    public void setIdEmenda(Long idEmenda) {
+        this.idEmenda = idEmenda;
     }
 
 }

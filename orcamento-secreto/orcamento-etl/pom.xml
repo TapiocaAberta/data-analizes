@@ -15,6 +15,9 @@
 		<quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
 		<quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
 		<quarkus.platform.version>2.13.1.Final</quarkus.platform.version>
+		<camel-quarkus.platform.artifact-id>quarkus-camel-bom</camel-quarkus.platform.artifact-id>
+		<camel-quarkus.platform.group-id>${quarkus.platform.group-id}</camel-quarkus.platform.group-id>
+		<camel-quarkus.platform.version>${quarkus.platform.version}</camel-quarkus.platform.version>
 		<skipITs>true</skipITs>
 		<surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
 	</properties>
@@ -24,6 +27,13 @@
 				<groupId>${quarkus.platform.group-id}</groupId>
 				<artifactId>${quarkus.platform.artifact-id}</artifactId>
 				<version>${quarkus.platform.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>${camel-quarkus.platform.group-id}</groupId>
+				<artifactId>${camel-quarkus.platform.artifact-id}</artifactId>
+				<version>${camel-quarkus.platform.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -61,11 +71,32 @@
 		</dependency>
 		<dependency>
 			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-jdbc-h2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-jdbc-postgresql</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-hibernate-orm-panache</artifactId>
+		</dependency>
+		<!-- Camel -->
+		<dependency>
+			<groupId>org.apache.camel.quarkus</groupId>
+			<artifactId>camel-quarkus-file</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel.quarkus</groupId>
+			<artifactId>camel-quarkus-jackson</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel.quarkus</groupId>
+			<artifactId>camel-quarkus-log</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel.quarkus</groupId>
+			<artifactId>camel-quarkus-bean</artifactId>
 		</dependency>
 		<dependency>
 			<!-- jsoup HTML parser library @ https://jsoup.org/ -->
