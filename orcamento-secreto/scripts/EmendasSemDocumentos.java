@@ -3,21 +3,21 @@
 //DEPS javax.json:javax.json-api:1.1,org.glassfish:javax.json:1.1
 
 import java.io.IOException;
-
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
+import javax.json.JsonStructure;
 import javax.json.JsonValue.ValueType;
 
 public class EmendasSemDocumentos {
 
-    private static final String CODIGO_EMENDA_PROP = "codigoEmenda";
+    record Documento(String arquivo, JsonStructure json) {
+    }
+
     private static final String DOCUMENTOS_PROP = "documentos";
 
     private static final String DOCUMENTOS_DIR = "../data-json/";
@@ -33,15 +33,14 @@ public class EmendasSemDocumentos {
                 .map(p -> {
                     try (var is = Files.newInputStream(p)) {
                         var reader = jsonReaderFactory.createReader(is);
-                        return reader.read();
+                        return new Documento(p.toString(), reader.read());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 })
-                .filter(json -> json.getValueType() == ValueType.OBJECT)
-                .map(json -> json.asJsonObject())
-                .filter(obj -> obj.getJsonArray(DOCUMENTOS_PROP).size() == 0)
-                .map(obj -> obj.getString(CODIGO_EMENDA_PROP))
+                .filter(doc -> doc.json.getValueType() == ValueType.OBJECT
+                        && doc.json.asJsonObject().getJsonArray(DOCUMENTOS_PROP).size() == 0)    
+                .map(doc -> doc.arquivo)            
                 .collect(Collectors.joining(System.lineSeparator()));
         Files.deleteIfExists(SAIDA_PATH);
         Files.writeString(SAIDA_PATH, emendas);
