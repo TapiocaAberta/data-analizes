@@ -5,12 +5,15 @@
 import java.io.IOException;
 
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
+import javax.json.JsonValue.ValueType;
 
 public class EmendasSemDocumentos {
 
@@ -26,15 +29,17 @@ public class EmendasSemDocumentos {
     public static void main(String... args) throws IOException {
         final var jsonReaderFactory = Json.createReaderFactory(Collections.emptyMap());
         final var emendas = Files.walk(DOCUMENTOS_PATH)
-                .filter(p -> p.toFile().isFile() && p.toString().endsWith("json"))
-                .map(f -> {
-                    try (var is = Files.newInputStream(f)) {
+                .filter(p -> p.toString().endsWith(".json"))
+                .map(p -> {
+                    try (var is = Files.newInputStream(p)) {
                         var reader = jsonReaderFactory.createReader(is);
-                        return reader.readObject();
+                        return reader.read();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 })
+                .filter(json -> json.getValueType() == ValueType.OBJECT)
+                .map(json -> json.asJsonObject())
                 .filter(obj -> obj.getJsonArray(DOCUMENTOS_PROP).size() == 0)
                 .map(obj -> obj.getString(CODIGO_EMENDA_PROP))
                 .collect(Collectors.joining(System.lineSeparator()));
