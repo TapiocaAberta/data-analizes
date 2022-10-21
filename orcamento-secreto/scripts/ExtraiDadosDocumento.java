@@ -85,14 +85,19 @@ public class ExtraiDadosDocumento {
 
         Predicate<Documento> filtroFavorecidoValido = doc -> doc.favorecido != null
                 && doc.favorecido.docFavorecido != null;
+
         Predicate<Documento> filtroPrefeitura = doc -> (doc.favorecido.nome.startsWith("PREFEITURA")
                 || doc.favorecido.nome.startsWith("MUNICIPIO"));
-        Predicate<Documento> filtroPessoaFisica = doc -> !filtroPrefeitura.test(doc)
-                && doc.favorecido.docFavorecido.startsWith("*") &&
+
+        Predicate<Documento> filtroEstado = doc -> doc.favorecido.nome.startsWith("ESTADO D");
+
+        Predicate<Documento> filtroPessoaFisica = doc -> doc.favorecido.docFavorecido.startsWith("*") &&
                 doc.favorecido.docFavorecido.endsWith("*");
-        Predicate<Documento> filtroPessoaJuridica = doc -> Pattern
-                .matches("^\\d{2}\\.\\d{3}\\.\\d{3}\\/\\d{4}\\-\\d{2}$",
-                        doc.favorecido.docFavorecido);
+
+        Predicate<Documento> filtroPessoaJuridica = doc -> (!filtroPrefeitura.test(doc)) && (!filtroEstado.test(doc))
+                && Pattern
+                        .matches("^\\d{2}\\.\\d{3}\\.\\d{3}\\/\\d{4}\\-\\d{2}$",
+                                doc.favorecido.docFavorecido);
         Predicate<Documento> filtroOutros = doc -> !filtroFavorecidoValido.test(doc) ||
                 !(filtroPessoaFisica.test(doc) ||
                         filtroPrefeitura.test(doc) ||
@@ -116,6 +121,9 @@ public class ExtraiDadosDocumento {
         final var documentosPrefeituras = todosDocumentos.stream()
                 .filter(filtroFavorecidoValido.and(filtroPrefeitura))
                 .toList();
+        final var documentosEstados = todosDocumentos.stream()
+                .filter(filtroFavorecidoValido.and(filtroEstado))
+                .toList();
         final var documentosPessoaFisica = todosDocumentos.stream()
                 .filter(filtroFavorecidoValido.and(filtroPessoaFisica))
                 .toList();
@@ -126,6 +134,7 @@ public class ExtraiDadosDocumento {
                 .filter(filtroOutros)
                 .toList();
         System.out.println("Há " + todosDocumentos.size() + " documentos");
+        System.out.println("Há " + documentosEstados.size() + " documentos de estados");
         System.out.println("Há " + documentosPrefeituras.size() + " documentos de prefeituras");
         System.out.println("Há " + documentosPessoaFisica.size() + " documentos de pessoas físicas");
         System.out.println("Há " + documentosPessoaJuridica.size() + " documentos de pessoas jurídicas");
@@ -134,10 +143,14 @@ public class ExtraiDadosDocumento {
         Files.createDirectories(SAIDA_DIR_PATH);
         Map.of(
                 "prefeituras", documentosPrefeituras,
+                "estados", documentosEstados,
                 "pessoas_fisicas", documentosPessoaFisica,
                 "pessoas_juridicas", documentosPessoaJuridica,
                 "outros", documentosOutros)
                 .forEach((particao, lista) -> {
+                    if (lista.size() > 10000) {
+
+                    }
                     var arquivoSaida = SAIDA_DIR_PATH
                             .resolve("documentos_" + tipo.name().toLowerCase() + "_" + particao + ".json");
                     try {
