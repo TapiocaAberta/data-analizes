@@ -4,7 +4,7 @@ package io.sjcdigital.orcamento.model.pojo;
  * @author Pedro Hos <pedro-hos@outlook.com>
  *
  */
-public class DataPojo {
+public class DocumentosDataPojo {
 
     private String data;
     private String fase;

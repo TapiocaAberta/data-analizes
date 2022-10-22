@@ -1,4 +1,4 @@
-package io.sjcdigital.orcamento;
+package io.sjcdigital.orcamento.utils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sjcdigital.orcamento.model.entity.Emendas;
 import io.sjcdigital.orcamento.model.pojo.ArquivosPojo;
 
-public class Main {
+public class ArquivoOrcamento {
 
     private static final String PATH = "/home/pesilva/workspace/code/pessoal/data-analizes/orcamento-secreto/data-json/";
     
