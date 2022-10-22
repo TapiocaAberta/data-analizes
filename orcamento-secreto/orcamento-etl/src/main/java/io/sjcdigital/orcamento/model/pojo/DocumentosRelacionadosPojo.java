@@ -8,11 +8,12 @@ import java.util.List;
  */
 public class DocumentosRelacionadosPojo {
 
+    private Long idEmenda;
     private String draw;
     private String recordsTotal;
     private String recordsFiltered;
     
-    private List<DataPojo> data;
+    private List<DocumentosDataPojo> data;
 
     /**
      * @return the draw
@@ -31,14 +32,14 @@ public class DocumentosRelacionadosPojo {
     /**
      * @return the data
      */
-    public List<DataPojo> getData() {
+    public List<DocumentosDataPojo> getData() {
         return data;
     }
 
     /**
      * @param data the data to set
      */
-    public void setData(List<DataPojo> data) {
+    public void setData(List<DocumentosDataPojo> data) {
         this.data = data;
     }
 
@@ -68,6 +69,20 @@ public class DocumentosRelacionadosPojo {
      */
     public void setRecordsFiltered(String recordsFiltered) {
         this.recordsFiltered = recordsFiltered;
+    }
+
+    /**
+     * @return the idEmenda
+     */
+    public Long getIdEmenda() {
+        return idEmenda;
+    }
+
+    /**
+     * @param idEmenda the idEmenda to set
+     */
+    public void setIdEmenda(Long idEmenda) {
+        this.idEmenda = idEmenda;
     }
 
 }
