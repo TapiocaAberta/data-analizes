@@ -37,6 +37,9 @@ public class Emendas extends PanacheEntity {
     public String valorRestoAPagar;
     public int quantidadeDocumentos;
     
+    @JsonIgnore
+    public int documentoOffset = 0;
+    
     //Flags para processamento de documentos
     
     @JsonIgnore

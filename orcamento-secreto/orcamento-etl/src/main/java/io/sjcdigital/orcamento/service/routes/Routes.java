@@ -24,6 +24,7 @@ public class Routes extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         
+        //select id, codigoEmenda from emendas where muitosDocumentos = true order by quantidadedocumentos asc;
         
         from("timer://selectDocumento?fixedRate=true&period=120000") //every 2 min
             .setBody(constant("select id, codigoEmenda from emendas where processado = false and "
@@ -57,7 +58,10 @@ public class Routes extends RouteBuilder {
         ;
         
         from("timer://selectDocumento?fixedRate=true&period=60000") //every 1min
-            .setBody(constant("select id, fase, codigoDocumento from documentos where processado = false and processando = false limit 2000;"))
+            .setBody(constant("select id, fase, codigoDocumento from documentos where processado = false "
+                                                                                    + "and processando = false "
+                                                                                    + "and pgdetalhesnotfound = false "
+                                                                                    + "limit 2000;"))
             .to("jdbc:default")
             .process(new Processor() {
                 @Override

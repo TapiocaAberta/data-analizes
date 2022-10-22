@@ -1,0 +1,1 @@
+pg_dump -U keycloak orcamentos > orcamentos_221022.sql

@@ -39,12 +39,10 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
     @Inject DocumentoRepository documentoRepository;
     
     public void buscaDocumentosRelacionado(List<Emendas> emendas) {
-        
         ExecutorService executor = Executors.newFixedThreadPool(30);
         emendas.forEach(emenda -> 
             executor.submit(() -> buscaDocumentosRelacionado(emenda))
         );
-        
     }
     
     /**

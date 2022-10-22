@@ -50,6 +50,9 @@ public class Documentos extends PanacheEntity {
     @JsonIgnore
     public Boolean erro = Boolean.FALSE;
     
+    @JsonIgnore
+    public Boolean pgDetalhesNotFound = Boolean.FALSE;
+    
     @ManyToOne
     @JoinColumn(name="favorecido_id")
     public Favorecido favorecido;

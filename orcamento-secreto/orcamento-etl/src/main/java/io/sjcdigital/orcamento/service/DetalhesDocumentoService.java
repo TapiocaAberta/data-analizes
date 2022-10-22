@@ -12,9 +12,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.transaction.Transactional;
-import javax.ws.rs.NotFoundException;
 
 import org.jsoup.Connection.Response;
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -45,13 +45,16 @@ public class DetalhesDocumentoService {
     @Inject FavorecidoRepository favorecidoRepository;
     @Inject OrgaoPagadorRepository orgaoPagadorRepository;
     
-    public void salvaPaginaDetalhes(List<Documentos> value) {
+    @Transactional
+    public void salvaPaginaDetalhes(List<Documentos> value) throws HttpStatusException {
 
         ExecutorService executor = Executors.newCachedThreadPool();
         
         LOGGER.info("[INICIO] Buscando detalhes do documento");
 
-        value.forEach(documento -> {
+        value.forEach(d -> {
+            
+            Documentos documento = documentoRepository.findByFaseAndCodigoDocumento(d.fase, d.codigoDocumento);
             
             executor.submit(() -> {
                 
@@ -62,14 +65,26 @@ public class DetalhesDocumentoService {
                                        .timeout(PortalTransparenciaConstantes.TIMEOUT)
                                        .followRedirects(true)
                                        .execute();
-                    
-                    if(execute.statusCode() == 404) {
-                        System.out.println("OPPPPSSSS");
-                    }
-                    
+          
                     String html = execute.parse().html();
-                    processaDetalhes(html, documento.fase, documento.codigoDocumento);
+                    processaDetalhes(html, documento);
 
+                } catch (HttpStatusException e) {
+                   
+                    if(e.getStatusCode() == 404) {
+                        
+                        documento.pgDetalhesNotFound = true;
+                        documentoRepository.persistAndFlush(documento);
+                        
+                        LOGGER.error("[ERRO] ao pegar pagina de detalhes não encontrada. "
+                                + "Fase:" + documento.fase + ", Código Documento: " + documento.codigoDocumento + " [ " + e.getMessage() + " ]");
+                       
+                       
+                    } else {
+                        LOGGER.error("[ERRO] ao pegar pagina de detalhe. "
+                                + "Fase:" + documento.fase + ", Código Documento: " + documento.codigoDocumento + " [ " + e.getMessage() + " ]");
+                    }
+                   
                 } catch (IOException e) {
                     LOGGER.error("[ERRO] ao pegar pagina de detalhe. "
                             + "Fase:" + documento.fase + ", Código Documento: " + documento.codigoDocumento + " [ " + e.getMessage() + " ]");
@@ -113,13 +128,11 @@ public class DetalhesDocumentoService {
      * @param documento
      */
     @Transactional
-    public void processaDetalhes(String file, String fase, String codigoDocumento) {
-        
-        Documentos documento = documentoRepository.findByFaseAndCodigoDocumento(fase, codigoDocumento);
+    public void processaDetalhes(String file, Documentos documento) {
         
         try {
     
-            LOGGER.info("[PROCESSANDO] arquivo de Detalhes para fase " + fase + " e código Documento " + codigoDocumento);
+            LOGGER.info("[PROCESSANDO] arquivo de Detalhes para fase " + documento.fase + " e código Documento " + documento.codigoDocumento);
     
             Document doc = Jsoup.parse(file, PortalTransparenciaConstantes.URL);
             

@@ -39,11 +39,14 @@ public class OrcamentoSecretoService extends PortalTransparencia {
     
     @Transactional
     public void salvaTodasEmendasJson() {
+        
         emendasRepository.findAll().stream().forEach(e -> {
             String filePath = Constantes.DATA_JSON_PATH + e.ano + "/";
             String fileName = e.id + "-" + e.numeroEmenda;
             FileUtil.salvaJSON(e, filePath, fileName);
         });
+        
+        LOGGER.info("Todos arquivos salvos em " + Constantes.DATA_JSON_PATH);
     }
 
     @Transactional
