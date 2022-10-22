@@ -1,7 +1,5 @@
 package io.sjcdigital.orcamento.service;
 
-import static io.sjcdigital.orcamento.utils.Constantes.EMENDAS_PATH;
-
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -51,38 +49,85 @@ public class OrcamentoSecretoService extends PortalTransparencia {
     @Transactional
     public void processaEmenda(EmendasPojo pojo) {
         
-        LOGGER.info("Processesando Emendas ..." + pojo.getData().size());
+        LOGGER.info("Processesando Emendas ...");
 
         try {
+            
             List<Emendas> emendas = Emendas.fromEmendaPojo(pojo);
             emendasRepository.persist(emendas);
-            documentosRelacionadosService.buscaTodosDocumentosRelacionados(emendas);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage());
         }
+        
+    }
+    
+    public void buscaPorPalavraChave(String palavraChave) {
+
+        try {
+
+            int quantidade = recuperaQuantidadeDeEmendas();
+            EmendasPojo emendas = buscaEmendas(0, quantidade, palavraChave);
+            processaEmenda(emendas);
+
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+        }
+
     }
 
     public void buscaTodasEmendasRelator() {
 
-        int offset = 0;
-
-        while (offset < 10) {
-
-            EmendasPojo emendas = buscaEmendas(offset);
-
-            if (emendas.getData().isEmpty()) {
-                System.out.println("Lista de emendas Vazia");
-                break;
-            }
-
-            FileUtil.salvaJSON(emendas, EMENDAS_PATH, offset + "-" + EmendaClient.TAMANHO_PAGINA);
-            offset = offset + EmendaClient.TAMANHO_PAGINA;
+        try {
+            
+            int quantidade = recuperaQuantidadeDeEmendas();
+            EmendasPojo emendas = buscaEmendas(0, quantidade);
+            processaEmenda(emendas);
+            
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
         }
 
     }
+    
+    /**
+     * @return
+     */
+    private int recuperaQuantidadeDeEmendas() {
+        
+        try {
+            
+            String recordsTotal = buscaEmendas(0, 1).getRecordsTotal();
+            return Integer.valueOf(recordsTotal);
+            
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+        }
+        
+        return EmendaClient.TAMANHO_PAGINA;
+    }
+    
+    protected EmendasPojo buscaEmendas(final int offset, final int tamanhoPagina, final String palavraChave) {
+        ResteasyWebTarget target = getTarget();
+        EmendaClient proxy = target.proxy(EmendaClient.class);
+        EmendasPojo emendas = proxy.getEmendas(offset, EmendaClient.PAGINACAO_SIMPLES, tamanhoPagina,
+                EmendaClient.DIRECAO_ORDENACAO, EmendaClient.COLUNA_ORDENACAO, EmendaClient.ANO_DE,
+                EmendaClient.ANO_ATE, EmendaClient.AUTOR, palavraChave, EmendaClient.COLUNAS_SELECIONADAS);
+        target.getResteasyClient().close();
+        return emendas;
+    }
 
-    private EmendasPojo buscaEmendas(final int offset) {
+    protected EmendasPojo buscaEmendas(final int offset, final int tamanhoPagina) {
+        ResteasyWebTarget target = getTarget();
+        EmendaClient proxy = target.proxy(EmendaClient.class);
+        EmendasPojo emendas = proxy.getEmendas(offset, EmendaClient.PAGINACAO_SIMPLES, tamanhoPagina,
+                EmendaClient.DIRECAO_ORDENACAO, EmendaClient.COLUNA_ORDENACAO, EmendaClient.ANO_DE,
+                EmendaClient.ANO_ATE, EmendaClient.AUTOR, EmendaClient.COLUNAS_SELECIONADAS);
+        target.getResteasyClient().close();
+        return emendas;
+    }
+
+    protected EmendasPojo buscaEmendas(final int offset) {
         ResteasyWebTarget target = getTarget();
         EmendaClient proxy = target.proxy(EmendaClient.class);
         EmendasPojo emendas = proxy.getEmendas(offset, EmendaClient.PAGINACAO_SIMPLES, EmendaClient.TAMANHO_PAGINA,

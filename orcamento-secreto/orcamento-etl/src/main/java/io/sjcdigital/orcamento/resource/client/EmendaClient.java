@@ -23,7 +23,7 @@ public interface EmendaClient {
 
     
     public static final boolean PAGINACAO_SIMPLES = false;
-    public static final int TAMANHO_PAGINA = 5;
+    public static final int TAMANHO_PAGINA = 1000;
     public static final String DIRECAO_ORDENACAO = "desc";
     public static final String ANO_DE = "2020";
     public static final String ANO_ATE = "2022";
@@ -45,5 +45,34 @@ public interface EmendaClient {
                                    @QueryParam("de") String deAno,
                                    @QueryParam("ate") String ateAno,
                                    @QueryParam("autor") String autor,
+                                   @QueryParam("colunasSelecionadas") List<String> colunasSelecionadas );
+    
+    /**
+     * Busca por Palavra Chave
+     * 
+     * @param offset
+     * @param paginacaoSimples
+     * @param tamanhoPagina
+     * @param direcaoOrdenacao
+     * @param colunaOrdenacao
+     * @param deAno
+     * @param ateAno
+     * @param autor
+     * @param palavraChave
+     * @param colunasSelecionadas
+     * @return
+     */
+    @GET
+    @Path("resultado")
+    @Produces({ MediaType.APPLICATION_JSON})
+    public EmendasPojo getEmendas( @QueryParam("offset") int offset, 
+                                   @QueryParam("paginacaoSimples") boolean paginacaoSimples, 
+                                   @QueryParam("tamanhoPagina") int tamanhoPagina, 
+                                   @QueryParam("direcaoOrdenacao") String direcaoOrdenacao, 
+                                   @QueryParam("colunaOrdenacao") String colunaOrdenacao,
+                                   @QueryParam("de") String deAno,
+                                   @QueryParam("ate") String ateAno,
+                                   @QueryParam("autor") String autor,
+                                   @QueryParam("palavraChave") String palavraChave,
                                    @QueryParam("colunasSelecionadas") List<String> colunasSelecionadas );
 }

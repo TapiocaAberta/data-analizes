@@ -1,12 +1,17 @@
 package io.sjcdigital.orcamento.service.routes;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 
-import io.sjcdigital.orcamento.model.pojo.DocumentosRelacionadosPojo;
-import io.sjcdigital.orcamento.model.pojo.EmendasPojo;
-import io.sjcdigital.orcamento.utils.Constantes;
+import io.sjcdigital.orcamento.model.entity.Documentos;
+import io.sjcdigital.orcamento.model.entity.Emendas;
 
 /**
  * @author Pedro Hos <pedro-hos@outlook.com>
@@ -19,38 +24,63 @@ public class Routes extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         
-        from("file:" + Constantes.EMENDAS_PATH + "?delay=100")
-            .log("Lendo Emendas de ${header.CamelFileName}")
-            .unmarshal().json(EmendasPojo.class)
-            .to("bean:orcamentoBean?method=processaEmenda")
-            .marshal().json(EmendasPojo.class)
-            .to("file:" + Constantes.EMENDAS_PATH + Constantes.EXECUTADO_FOLDER);
         
-        from("file:" + Constantes.DOC_RELACIONADOS_PATH + "?delay=5000")
-            .log("Lendo Documentos Relacionados de ${header.CamelFileName}")
-            .unmarshal().json(DocumentosRelacionadosPojo.class)
-            .to("bean:documentosRelacionadosBean?method=processaDocumentosRelacionados(${body}, ${header.CamelFileName})")
-            .marshal().json(DocumentosRelacionadosPojo.class)
-            .to("file:" + Constantes.DOC_RELACIONADOS_PATH + Constantes.EXECUTADO_FOLDER);
+        from("timer://selectDocumento?fixedRate=true&period=120000") //every 2 min
+            .setBody(constant("select id, codigoEmenda from emendas where processado = false and "
+                    + "processando = false and "
+                    + "muitosDocumentos = false "
+                    + "limit 30;"))
+            .to("jdbc:default")
+            .process(new Processor() {
+                @Override
+                public void process(Exchange exchange) throws Exception {
+                    
+                    @SuppressWarnings("unchecked")
+                    List<HashMap<String, Object>> body = (List<HashMap<String, Object>>) exchange.getIn().getBody(List.class);
+                    
+                    if(!body.isEmpty()) {
+                        
+                        List<Emendas> emendas = new ArrayList<>();
+                        
+                        body.forEach(b -> {
+                            String id =  String.valueOf(b.get("id"));
+                            String codigoEmenda = String.valueOf(b.get("codigoemenda"));
+                            emendas.add(new Emendas(Long.parseLong(id), codigoEmenda));
+                        });
+                        
+                        exchange.getIn().setBody(emendas);
+                        
+                    }
+                }
+            })
+            .to("bean:documentosRelacionadosBean?method=buscaDocumentosRelacionado(${body})")
+        ;
         
-        //Retry
-        from("file:" + Constantes.DOC_RELACIONADOS_PATH + Constantes.RETRY_FOLDER + "?delay=100000")
-            .log("Lendo Documentos Relacionados (Retry) de ${header.CamelFileName}")
-            .unmarshal().json(DocumentosRelacionadosPojo.class)
-            .to("bean:documentosRelacionadosBean?method=processaDocumentosRelacionados(${body}, ${header.CamelFileName})")
-            .marshal().json(DocumentosRelacionadosPojo.class)
-            .to("file:" + Constantes.DOC_RELACIONADOS_PATH + Constantes.EXECUTADO_FOLDER);
-        
-        from("file:" + Constantes.DOC_DETALHES_PATH + "?delay=20000")
-            .log("Lendo Documentos Detalhes de ${header.CamelFileName}")
-            .to("bean:detalhesDocumentoBean?method=processaDetalhes(${body}, ${header.CamelFileName})")
-            .to("file:" + Constantes.DOC_DETALHES_PATH + Constantes.EXECUTADO_FOLDER);
-        
-        //Retry
-        from("file:" + Constantes.DOC_DETALHES_PATH + Constantes.RETRY_FOLDER + "?delay=200000")
-            .log("Lendo Documentos Detalhes de ${header.CamelFileName}")
-            .to("bean:detalhesDocumentoBean?method=processaDetalhes(${body}, ${header.CamelFileName})")
-            .to("file:" + Constantes.DOC_DETALHES_PATH + Constantes.EXECUTADO_FOLDER);
+        from("timer://selectDocumento?fixedRate=true&period=60000") //every 1min
+            .setBody(constant("select id, fase, codigoDocumento from documentos where processado = false and processando = false limit 2000;"))
+            .to("jdbc:default")
+            .process(new Processor() {
+                @Override
+                public void process(Exchange exchange) throws Exception {
+                    
+                    @SuppressWarnings("unchecked")
+                    List<HashMap<String, Object>> body = (List<HashMap<String, Object>>) exchange.getIn().getBody(List.class);
+                    
+                    if(!body.isEmpty()) {
+                        
+                        List<Documentos> documentos = new ArrayList<>();
+                        
+                        body.forEach(b -> {
+                            documentos.add(new Documentos((String) b.get("fase"), (String) b.get("codigodocumento")));
+                        });
+                        
+                        exchange.getIn().setBody(documentos);
+                        
+                    }
+                }
+            })
+            .to("bean:detalhesDocumentoBean?method=salvaPaginaDetalhes(${body})")
+           ;
         
     }
 

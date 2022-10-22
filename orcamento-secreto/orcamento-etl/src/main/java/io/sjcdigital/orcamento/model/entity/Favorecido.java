@@ -20,6 +20,7 @@ public class Favorecido extends PanacheEntity {
     @Column(unique = true)
     public String docFavorecido;
     public String nome;
+    public String tipo;
     public String url;
     
     @JsonIgnore

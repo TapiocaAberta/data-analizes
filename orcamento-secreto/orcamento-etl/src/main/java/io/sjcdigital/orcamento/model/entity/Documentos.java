@@ -1,8 +1,15 @@
 package io.sjcdigital.orcamento.model.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -15,6 +22,7 @@ import io.sjcdigital.orcamento.model.pojo.DocumentosDataPojo;
  */
 
 @Entity(name = "documentos")
+@Table(uniqueConstraints =  @UniqueConstraint(columnNames = {"fase", "codigoDocumento"}))
 public class Documentos extends PanacheEntity {
     
     public String data;
@@ -22,10 +30,25 @@ public class Documentos extends PanacheEntity {
     public String codigoDocumento;
     public String codigoDocumentoResumido;
     public String especieTipo;
+    
+    @Column(length = 1000)
     public String observacao;
+    
     public String tipo;
     public String valorDocumento;
+    
+    @Column(length = 1000)
     public String descricao;
+    
+    //Flags para processo de detalhes
+    @JsonIgnore
+    public Boolean processando = Boolean.FALSE;
+    
+    @JsonIgnore
+    public Boolean processado  = Boolean.FALSE;
+    
+    @JsonIgnore
+    public Boolean erro = Boolean.FALSE;
     
     @ManyToOne
     @JoinColumn(name="favorecido_id")
@@ -35,14 +58,16 @@ public class Documentos extends PanacheEntity {
     @JoinColumn(name="orgaoPagador_id")
     public OrgaoPagador orgaoPagador;
     
-    @ManyToOne
-    @JoinColumn(name="emenda_id")
     @JsonIgnore
-    public Emendas emenda;
-    
+    @ManyToMany(mappedBy = "documentos")
+    public List<Emendas> emenda = new ArrayList<>();
     
     public Documentos() { }
-
+    
+    public Documentos(String fase, String codigoDocumento) { 
+        this.codigoDocumento = codigoDocumento;
+        this.fase = fase;
+    }
 
     /**
      * @param data
@@ -59,7 +84,7 @@ public class Documentos extends PanacheEntity {
      */
     public Documentos(  String data, String fase, String codigoDocumento, String codigoDocumentoResumido,
                         String especieTipo, String observacao, String tipo, String valorDocumento, String descricao,
-                        Favorecido favorecido, OrgaoPagador orgaopagador, Emendas emendas) {
+                        Favorecido favorecido, OrgaoPagador orgaopagador, List<Emendas> emendas) {
         super();
         this.data = data;
         this.fase = fase;
@@ -75,13 +100,13 @@ public class Documentos extends PanacheEntity {
         this.emenda = emendas;
     }
     
-    public static Documentos fromDocumentoDataPojo(DocumentosDataPojo pojo, Emendas emenda) {
+    public static Documentos fromDocumentoDataPojo(DocumentosDataPojo pojo) {
         return new Documentos(  pojo.getData(), 
                                 pojo.getFase(), 
                                 pojo.getCodigoDocumento(), 
                                 pojo.getCodigoDocumentoResumido(), 
                                 pojo.getEspecieTipo(), 
-                                null, null, null, null, null, null, emenda);
+                                null, null, null, null, null, null, new ArrayList<>());
     }
     
     

@@ -3,9 +3,11 @@ package io.sjcdigital.orcamento.model.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.OneToMany;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.sjcdigital.orcamento.model.pojo.DocumentosRelacionadosPojo;
@@ -33,8 +35,24 @@ public class Emendas extends PanacheEntity {
     public String valorRestoCancelado;
     public String valorRestoPago;
     public String valorRestoAPagar;
+    public int quantidadeDocumentos;
     
-    @OneToMany(mappedBy = "emenda", cascade = CascadeType.ALL)
+    //Flags para processamento de documentos
+    
+    @JsonIgnore
+    public Boolean processando = Boolean.FALSE;
+    
+    @JsonIgnore
+    public Boolean processado = Boolean.FALSE;
+    
+    @JsonIgnore
+    public Boolean erro = Boolean.FALSE;
+    
+    @JsonIgnore
+    public boolean muitosDocumentos = Boolean.FALSE;
+    
+    @ManyToMany
+    @JoinTable(name = "emendas_documentos")
     public List<Documentos> documentos = new ArrayList<>();
     
     public Emendas() {}
@@ -60,6 +78,14 @@ public class Emendas extends PanacheEntity {
         this.valorRestoPago = valorRestoPago;
     }
     
+    /**
+     * @param parseLong
+     */
+    public Emendas(long id, String codigoEmenda) {
+        this.id = id;
+        this.codigoEmenda = codigoEmenda;
+    }
+
     public static List<Emendas> fromEmendaPojo(EmendasPojo pojo) {
         
         List<Emendas> emendas = new ArrayList<>();
@@ -74,9 +100,9 @@ public class Emendas extends PanacheEntity {
         
     }
     
-    public static List<Documentos> criaDocumentos (DocumentosRelacionadosPojo pojo, Emendas emenda) {
+    public static List<Documentos> criaDocumentos (DocumentosRelacionadosPojo pojo) {
         List<Documentos> documentos = new ArrayList<>();
-        pojo.getData().forEach(p -> documentos.add(Documentos.fromDocumentoDataPojo(p, emenda)));
+        pojo.getData().forEach(p -> documentos.add(Documentos.fromDocumentoDataPojo(p)));
         return documentos;
     }
     
