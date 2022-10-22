@@ -27,6 +27,7 @@ public class EmendasSemDocumentos {
     private static final Path SAIDA_PATH = Paths.get(SAIDA);
 
     public static void main(String... args) throws IOException {
+	final var qtdeEmendas = args.length == 0 ? 0 : Integer.parseInt(args[0]);
         final var jsonReaderFactory = Json.createReaderFactory(Collections.emptyMap());
         final var emendas = Files.walk(DOCUMENTOS_PATH)
                 .filter(p -> p.toString().endsWith(".json"))
@@ -39,7 +40,8 @@ public class EmendasSemDocumentos {
                     }
                 })
                 .filter(doc -> doc.json.getValueType() == ValueType.OBJECT
-                        && doc.json.asJsonObject().getJsonArray(DOCUMENTOS_PROP).size() == 0)    
+                        && doc.json.asJsonObject().getJsonArray(DOCUMENTOS_PROP).size() == qtdeEmendas) 
+                .peek(doc -> System.out.println(doc.json.asJsonObject().getString("codigoEmenda")))   
                 .map(doc -> doc.arquivo)            
                 .collect(Collectors.joining(System.lineSeparator()));
         Files.deleteIfExists(SAIDA_PATH);

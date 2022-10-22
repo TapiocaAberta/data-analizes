@@ -142,8 +142,8 @@ public class ExtraiDadosDocumento {
 
         Files.createDirectories(SAIDA_DIR_PATH);
         Map.of(
-                "prefeituras", documentosPrefeituras,
                 "estados", documentosEstados,
+                "prefeituras", documentosPrefeituras,
                 "pessoas_fisicas", documentosPessoaFisica,
                 "pessoas_juridicas", documentosPessoaJuridica,
                 "outros", documentosOutros)
