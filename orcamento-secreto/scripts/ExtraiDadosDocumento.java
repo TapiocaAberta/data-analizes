@@ -23,7 +23,7 @@ public class ExtraiDadosDocumento {
         private static final String DOCUMENTOS_DIR = "../data-json/";
         private static final Path DOCUMENTOS_PATH = Paths.get(DOCUMENTOS_DIR);
 
-        private static final Path SAIDA_DIR_PATH = Paths.get("../resumo_documentos");
+        private static final Path SAIDA_DIR_PATH = Paths.get("../dashbuilder");
 
         private static final Tipo TIPO_PADRAO = Tipo.Pagamento;
 
@@ -113,7 +113,6 @@ public class ExtraiDadosDocumento {
                                                 return MAPPER.readValue(is, Emenda.class);
                                         } catch (Exception e) {
                                                 System.out.println("Ignorando " + p.toFile().getName());
-                                                System.out.println(e.getMessage());
                                                 return null;
                                         }
                                 })
