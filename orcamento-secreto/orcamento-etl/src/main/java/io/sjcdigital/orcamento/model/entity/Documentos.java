@@ -22,48 +22,48 @@ import io.sjcdigital.orcamento.model.pojo.DocumentosDataPojo;
  */
 
 @Entity(name = "documentos")
-@Table(uniqueConstraints =  @UniqueConstraint(columnNames = {"fase", "codigoDocumento"}))
+@Table(uniqueConstraints =  @UniqueConstraint(columnNames = {"codigoDocumento"}))
 public class Documentos extends PanacheEntity {
     
-    public String data;
-    public String fase;
-    public String codigoDocumento;
-    public String codigoDocumentoResumido;
-    public String especieTipo;
+    private String data;
+    private String fase;
+    private String codigoDocumento;
+    private String codigoDocumentoResumido;
+    private String especieTipo;
     
     @Column(length = 1000)
-    public String observacao;
+    private String observacao;
     
-    public String tipo;
-    public String valorDocumento;
+    private String tipo;
+    private String valorDocumento;
     
     @Column(length = 1000)
-    public String descricao;
+    private String descricao;
     
     //Flags para processo de detalhes
     @JsonIgnore
-    public Boolean processando = Boolean.FALSE;
+    private Boolean processando = Boolean.FALSE;
     
     @JsonIgnore
-    public Boolean processado  = Boolean.FALSE;
+    private Boolean processado  = Boolean.FALSE;
     
     @JsonIgnore
-    public Boolean erro = Boolean.FALSE;
+    private Boolean erro = Boolean.FALSE;
     
     @JsonIgnore
-    public Boolean pgDetalhesNotFound = Boolean.FALSE;
+    private Boolean pgDetalhesNotFound = Boolean.FALSE;
     
     @ManyToOne
     @JoinColumn(name="favorecido_id")
-    public Favorecido favorecido;
+    private Favorecido favorecido;
     
     @ManyToOne
     @JoinColumn(name="orgaoPagador_id")
-    public OrgaoPagador orgaoPagador;
+    private OrgaoPagador orgaoPagador;
     
     @JsonIgnore
     @ManyToMany(mappedBy = "documentos")
-    public List<Emendas> emenda = new ArrayList<>();
+    private List<Emendas> emenda = new ArrayList<>();
     
     public Documentos() { }
     
@@ -110,6 +110,230 @@ public class Documentos extends PanacheEntity {
                                 pojo.getCodigoDocumentoResumido(), 
                                 pojo.getEspecieTipo(), 
                                 null, null, null, null, null, null, new ArrayList<>());
+    }
+
+    /**
+     * @return the data
+     */
+    public String getData() {
+        return data;
+    }
+
+    /**
+     * @param data the data to set
+     */
+    public void setData(String data) {
+        this.data = data;
+    }
+
+    /**
+     * @return the fase
+     */
+    public String getFase() {
+        return fase;
+    }
+
+    /**
+     * @param fase the fase to set
+     */
+    public void setFase(String fase) {
+        this.fase = fase;
+    }
+
+    /**
+     * @return the codigoDocumento
+     */
+    public String getCodigoDocumento() {
+        return codigoDocumento;
+    }
+
+    /**
+     * @param codigoDocumento the codigoDocumento to set
+     */
+    public void setCodigoDocumento(String codigoDocumento) {
+        this.codigoDocumento = codigoDocumento;
+    }
+
+    /**
+     * @return the codigoDocumentoResumido
+     */
+    public String getCodigoDocumentoResumido() {
+        return codigoDocumentoResumido;
+    }
+
+    /**
+     * @param codigoDocumentoResumido the codigoDocumentoResumido to set
+     */
+    public void setCodigoDocumentoResumido(String codigoDocumentoResumido) {
+        this.codigoDocumentoResumido = codigoDocumentoResumido;
+    }
+
+    /**
+     * @return the especieTipo
+     */
+    public String getEspecieTipo() {
+        return especieTipo;
+    }
+
+    /**
+     * @param especieTipo the especieTipo to set
+     */
+    public void setEspecieTipo(String especieTipo) {
+        this.especieTipo = especieTipo;
+    }
+
+    /**
+     * @return the observacao
+     */
+    public String getObservacao() {
+        return observacao;
+    }
+
+    /**
+     * @param observacao the observacao to set
+     */
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
+    }
+
+    /**
+     * @return the tipo
+     */
+    public String getTipo() {
+        return tipo;
+    }
+
+    /**
+     * @param tipo the tipo to set
+     */
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    /**
+     * @return the valorDocumento
+     */
+    public String getValorDocumento() {
+        return valorDocumento;
+    }
+
+    /**
+     * @param valorDocumento the valorDocumento to set
+     */
+    public void setValorDocumento(String valorDocumento) {
+        this.valorDocumento = valorDocumento;
+    }
+
+    /**
+     * @return the descricao
+     */
+    public String getDescricao() {
+        return descricao;
+    }
+
+    /**
+     * @param descricao the descricao to set
+     */
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    /**
+     * @return the processando
+     */
+    public Boolean getProcessando() {
+        return processando;
+    }
+
+    /**
+     * @param processando the processando to set
+     */
+    public void setProcessando(Boolean processando) {
+        this.processando = processando;
+    }
+
+    /**
+     * @return the processado
+     */
+    public Boolean getProcessado() {
+        return processado;
+    }
+
+    /**
+     * @param processado the processado to set
+     */
+    public void setProcessado(Boolean processado) {
+        this.processado = processado;
+    }
+
+    /**
+     * @return the erro
+     */
+    public Boolean getErro() {
+        return erro;
+    }
+
+    /**
+     * @param erro the erro to set
+     */
+    public void setErro(Boolean erro) {
+        this.erro = erro;
+    }
+
+    /**
+     * @return the pgDetalhesNotFound
+     */
+    public Boolean getPgDetalhesNotFound() {
+        return pgDetalhesNotFound;
+    }
+
+    /**
+     * @param pgDetalhesNotFound the pgDetalhesNotFound to set
+     */
+    public void setPgDetalhesNotFound(Boolean pgDetalhesNotFound) {
+        this.pgDetalhesNotFound = pgDetalhesNotFound;
+    }
+
+    /**
+     * @return the favorecido
+     */
+    public Favorecido getFavorecido() {
+        return favorecido;
+    }
+
+    /**
+     * @param favorecido the favorecido to set
+     */
+    public void setFavorecido(Favorecido favorecido) {
+        this.favorecido = favorecido;
+    }
+
+    /**
+     * @return the orgaoPagador
+     */
+    public OrgaoPagador getOrgaoPagador() {
+        return orgaoPagador;
+    }
+
+    /**
+     * @param orgaoPagador the orgaoPagador to set
+     */
+    public void setOrgaoPagador(OrgaoPagador orgaoPagador) {
+        this.orgaoPagador = orgaoPagador;
+    }
+
+    /**
+     * @return the emenda
+     */
+    public List<Emendas> getEmenda() {
+        return emenda;
+    }
+
+    /**
+     * @param emenda the emenda to set
+     */
+    public void setEmenda(List<Emendas> emenda) {
+        this.emenda = emenda;
     }
     
     

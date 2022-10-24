@@ -1,0 +1,9 @@
+select count(*) from emendas where processado = true;
+select count(*) from documentos where processado = true;
+
+select id, codigoemenda, quantidadedocumentos from emendas where muitosdocumentos = true and processado = false order by quantidadedocumentos asc;
+SELECT COUNT(*) from documentos where processado=false;
+
+$ podman cp postgres-container:/orcamentos_231022.sql orcamentos_231022.sql
+
+

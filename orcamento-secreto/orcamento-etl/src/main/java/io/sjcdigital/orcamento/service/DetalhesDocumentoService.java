@@ -45,7 +45,6 @@ public class DetalhesDocumentoService {
     @Inject FavorecidoRepository favorecidoRepository;
     @Inject OrgaoPagadorRepository orgaoPagadorRepository;
     
-    @Transactional
     public void salvaPaginaDetalhes(List<Documentos> value) throws HttpStatusException {
 
         ExecutorService executor = Executors.newCachedThreadPool();
@@ -54,40 +53,35 @@ public class DetalhesDocumentoService {
 
         value.forEach(d -> {
             
-            Documentos documento = documentoRepository.findByFaseAndCodigoDocumento(d.fase, d.codigoDocumento);
             
             executor.submit(() -> {
                 
                 try {
                     
-                    Response execute = Jsoup.connect(pegaURLDocumento(documento.fase, documento.codigoDocumento))
+                    Response execute = Jsoup.connect(pegaURLDocumento(d.getFase(), d.getCodigoDocumento()))
                                        .userAgent(PortalTransparenciaConstantes.AGENT)
                                        .timeout(PortalTransparenciaConstantes.TIMEOUT)
                                        .followRedirects(true)
                                        .execute();
           
                     String html = execute.parse().html();
-                    processaDetalhes(html, documento);
+                    processaDetalhes(html, d);
 
                 } catch (HttpStatusException e) {
                    
                     if(e.getStatusCode() == 404) {
                         
-                        documento.pgDetalhesNotFound = true;
-                        documentoRepository.persistAndFlush(documento);
-                        
                         LOGGER.error("[ERRO] ao pegar pagina de detalhes não encontrada. "
-                                + "Fase:" + documento.fase + ", Código Documento: " + documento.codigoDocumento + " [ " + e.getMessage() + " ]");
-                       
+                                + "Fase:" + d.getFase() + ", Código Documento: " + d.getCodigoDocumento() + " [ " + e.getMessage() + " ]");
                        
                     } else {
                         LOGGER.error("[ERRO] ao pegar pagina de detalhe. "
-                                + "Fase:" + documento.fase + ", Código Documento: " + documento.codigoDocumento + " [ " + e.getMessage() + " ]");
+                                + "Fase:" + d.getFase() + ", Código Documento: " + d.getCodigoDocumento() + " [ " + e.getMessage() + " ]");
                     }
                    
                 } catch (IOException e) {
                     LOGGER.error("[ERRO] ao pegar pagina de detalhe. "
-                            + "Fase:" + documento.fase + ", Código Documento: " + documento.codigoDocumento + " [ " + e.getMessage() + " ]");
+                            + "Fase:" + d.getFase() + ", Código Documento: " + d.getCodigoDocumento() + " [ " + e.getMessage() + " ]");
                 }
 
             });
@@ -128,23 +122,26 @@ public class DetalhesDocumentoService {
      * @param documento
      */
     @Transactional
-    public void processaDetalhes(String file, Documentos documento) {
+    public void processaDetalhes(String file, Documentos documentos) {
+        
+        Documentos documento = documentoRepository.findByFaseAndCodigoDocumento(documentos.getFase(), documentos.getCodigoDocumento());
         
         try {
     
-            LOGGER.info("[PROCESSANDO] arquivo de Detalhes para fase " + documento.fase + " e código Documento " + documento.codigoDocumento);
+            LOGGER.info("[PROCESSANDO] arquivo de Detalhes para fase " + documentos.getFase() + " e código Documento " + documentos.getCodigoDocumento());
+            
     
             Document doc = Jsoup.parse(file, PortalTransparenciaConstantes.URL);
             
-            documento.processando = Boolean.TRUE;
+            documento.setProcessado(Boolean.TRUE);
             documentoRepository.persist(documento);
             
             // Apenas Dados tabelados
             Elements dadosTabelados = doc.getElementsByClass("dados-tabelados");
-            documento.descricao = dadosTabelados.select("strong:contains(Descrição)").next("span").text();
-            documento.tipo = dadosTabelados.select("strong:contains(Tipo de documento)").next("span").text();
-            documento.valorDocumento = dadosTabelados.select("strong:contains(Valor do documento)").next("span").text();
-            documento.observacao = dadosTabelados.select("strong:contains(Observação do documento)").next("span").text();
+            documento.setDescricao(dadosTabelados.select("strong:contains(Descrição)").next("span").text());
+            documento.setTipo(dadosTabelados.select("strong:contains(Tipo de documento)").next("span").text());
+            documento.setValorDocumento(dadosTabelados.select("strong:contains(Valor do documento)").next("span").text());
+            documento.setObservacao(dadosTabelados.select("strong:contains(Observação do documento)").next("span").text());
     
             Elements dadosDetalhados = doc.getElementsByClass("dados-detalhados");
     
@@ -165,10 +162,10 @@ public class DetalhesDocumentoService {
                 
                 favorecidoRepository.persist(favorecido);
     
-                documento.favorecido = favorecido;
+                documento.setFavorecido(favorecido);
     
             } else {
-                documento.favorecido = favorecido;
+                documento.setFavorecido(favorecido);
             }
     
             // Apenas Orgao Pagador
@@ -204,24 +201,25 @@ public class DetalhesDocumentoService {
                 orgaoPagador.gestaoNome = gestaoDiv.next("span").next("span").text();
                 orgaoPagadorRepository.persist(orgaoPagador);
     
-                documento.orgaoPagador = orgaoPagador;
+                documento.setOrgaoPagador(orgaoPagador);
     
             } else {
-                documento.orgaoPagador = orgaoPagador;
+                documento.setOrgaoPagador(orgaoPagador);
             }
     
-            documento.processado = Boolean.TRUE;
-            documento.erro = Boolean.FALSE;
-            documento.processando  = Boolean.FALSE;
+            documento.setProcessado(Boolean.TRUE);
+            documento.setErro(Boolean.FALSE);
+            documento.setProcessando(Boolean.FALSE);
             
             documentoRepository.persist(documento);
             
             LOGGER.info("[FINALIZADO] Detalhes salvos com sucesso!");
             
          } catch (Exception e) {
-            LOGGER.error("Erro ao processar detalhes de " + documento.codigoDocumento + " - " + e.getMessage());
-            documento.erro = Boolean.TRUE;
-            documento.processando = Boolean.FALSE;
+            LOGGER.error("Erro ao processar detalhes de " + documento.getCodigoDocumento() + " - " + e.getMessage());
+            documento.setProcessado(Boolean.FALSE);
+            documento.setErro(Boolean.TRUE);
+            documento.setProcessando(Boolean.FALSE);
             documentoRepository.persist(documento);
         }
     }

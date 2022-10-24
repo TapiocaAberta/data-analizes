@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.sjcdigital.orcamento.service.DocumentoRelacionadoService;
 import io.sjcdigital.orcamento.service.OrcamentoSecretoService;
 
 /**
@@ -31,6 +32,21 @@ public class EmendasResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmendasResource.class);
     
     @Inject OrcamentoSecretoService orcamentoService;
+    @Inject DocumentoRelacionadoService docrelacionadosService;
+    
+    @GET
+    @Path("/buscaEmendas/arquivos")
+    public Response buscaPorArquivos() {
+        LOGGER.info("Buscando Emendas por arquivos");
+        
+        ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
+        
+        newSingleThreadExecutor.submit(() -> {
+            docrelacionadosService.processaMuitosDocumentosArquivo();
+        });
+        
+        return Response.ok().build();
+    }
     
     @GET
     @Path("/buscaEmendas/palavra-chave/{palavraChave}")
