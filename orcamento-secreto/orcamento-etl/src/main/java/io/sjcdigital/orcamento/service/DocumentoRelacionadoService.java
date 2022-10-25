@@ -1,19 +1,20 @@
 package io.sjcdigital.orcamento.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -52,46 +53,94 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
     @Inject EmendasRepository emendaReporitory;
     @Inject DocumentoRepository documentoRepository;
     
-    
-    @Transactional
-    public void processaMuitosDocumentosArquivo() {
-        populaDocumentosRelacionadosArquivo(emendaReporitory.buscaArquivosGrandesNaoProcesados().get(0));
+    public static void main(String[] args) {
+        
+        DocumentoRelacionadoService d = new DocumentoRelacionadoService();
+        
+        try (Stream<Path> walk = Files.walk(Paths.get(Constantes.DOC_RELACIONADOS_PATH))) {
+            
+            walk.filter(Files::isRegularFile).collect(Collectors.toList()).forEach(f -> {
+                DocumentosRelacionadosPojo pojo = d.readJsonFile(Constantes.DOC_RELACIONADOS_PATH, f.getFileName().toString());
+                
+                Collection<List<DocumentosDataPojo>> partition = d.partition(pojo.getData(), 10000);
+                int i = 1;
+                
+                for (List<DocumentosDataPojo> p : partition) {
+                    
+                    DocumentosRelacionadosPojo drp = new DocumentosRelacionadosPojo();
+                    drp.setDraw(pojo.getDraw());
+                    drp.setIdEmenda(pojo.getIdEmenda());
+                    drp.setRecordsFiltered(pojo.getRecordsFiltered());
+                    drp.setRecordsTotal(pojo.getRecordsTotal());
+                    drp.setData(p);
+                    
+                    FileUtil.salvaJSON(drp, Constantes.DOC_RELACIONADOS_PATH + "partition/" + pojo.getIdEmenda() + "/", i + ".json");
+                    i++;
+                }
+                
+            });;
+            
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        
     }
     
     @Transactional
-    public void populaDocumentosRelacionadosArquivo(Emendas emenda) {
-        
-        String fileName = emenda.id + "-" + emenda.codigoEmenda;
-        DocumentosRelacionadosPojo pojo = this.readJsonFile(fileName);
-        
-        Collection<Documentos> documentos = converteParaDocumentos(pojo, emenda);
-        emenda.documentos.addAll(documentos);
-        emenda.processado = Boolean.TRUE;
-        emenda.erro = Boolean.FALSE;
-        emenda.processando = Boolean.FALSE;
-        emendaReporitory.persistAndFlush(emenda);
-        
-        LOGGER.info("[FINALIZADO] Processo para emenda id " + emenda.id);
+    public void processaMuitosDocumentosArquivo(Integer index) {
+        populaDocumentosRelacionadosArquivo(emendaReporitory.buscaArquivosGrandesNaoProcesados().get(0), index);
     }
     
-    public static<T> List<List<T>> partition(List<T> list, int size) {
-        List<List<T>> partitions = new ArrayList<>();
-
-        if (list.size() == 0) {
-            return partitions;
-        }
-
-        int length = list.size();
-
-        int numOfPartitions = length / size + ((length % size == 0) ? 0 : 1);
-
-        for (int i = 0; i < numOfPartitions; i++) {
-            int from = i * size;
-            int to = Math.min((i * size + size), length);
-            partitions.add(list.subList(from, to));
-        }
+    @Transactional
+    public void populaDocumentosRelacionadosArquivo(Emendas emenda, Integer index) {
         
-        return partitions;
+        String filePath = Constantes.DOC_RELACIONADOS_PATH + "partition/" + emenda.id + "/";
+        List<Path> files = listFiles(Paths.get(filePath));
+        
+        //listFiles(Paths.get(filePath)).forEach(file -> {
+            
+            LOGGER.info("[INICIADO] Processo para emenda id " + emenda.id + " [ " + index + " ]");
+            
+            DocumentosRelacionadosPojo pojo = this.readJsonFile(filePath, ""+index);
+            Collection<Documentos> documentos = converteParaDocumentos(pojo, emenda);
+            emenda.documentos.addAll(documentos);
+            
+            if (index == files.size()) {
+                emenda.processado = Boolean.TRUE;
+                emenda.erro = Boolean.FALSE;
+                emenda.processando = Boolean.FALSE;
+            }
+            emendaReporitory.persist(emenda);
+            
+            LOGGER.info("[FINALIZADO] Processo para emenda id " + emenda.id + " [ " + index + " ]");
+            
+       //});
+        
+        LOGGER.info("[FINALIZADO TODO PROCESSO]");
+        
+    }
+    
+    public static List<Path> listFiles(Path path) {
+
+        List<Path> result;
+        try (Stream<Path> walk = Files.walk(path)) {
+            result = walk.filter(Files::isRegularFile).collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        } 
+        
+        return result;
+
+    }
+    
+    public Collection<List<DocumentosDataPojo>> partition (List<DocumentosDataPojo> list, int chunkSize) {
+        final AtomicInteger counter = new AtomicInteger();
+        return list.stream()
+                .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / chunkSize))
+                .values();
     }
     
     /**
@@ -103,13 +152,8 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
         
         LOGGER.info("[INICIANDO] Busca de Documentos para " + emenda.codigoEmenda + " com " + emenda.quantidadeDocumentos + " documentos.");
         
-        Map<String, Documentos> documentos = new HashMap<>();
-        
-        partition(pojo.getData().stream().map(DocumentosDataPojo::getCodigoDocumento).collect(Collectors.toList()), 10).forEach(codigos -> {
-            documentos.putAll(documentoRepository.findByCodigoDocumento(codigos));
-        });
-        
-        System.out.println(documentos.size());
+        List<String> codigos = pojo.getData().stream().map(DocumentosDataPojo::getCodigoDocumento).collect(Collectors.toList());
+        Map<String, Documentos> documentos = documentoRepository.findByCodigoDocumento(codigos);
         
         pojo.getData().forEach(p -> {
             
@@ -122,17 +166,19 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
             
         });
         
+        
         documentoRepository.persist(documentos.values());
+        
         LOGGER.info("[FINALIZADO] Busca de Documentos para " + emenda.codigoEmenda + " com " + emenda.quantidadeDocumentos + " documentos.");
         
         return documentos.values();
     }
 
-    private DocumentosRelacionadosPojo readJsonFile(String filename) {
+    private DocumentosRelacionadosPojo readJsonFile(String filePath, String filename) {
         
         try {
-            
-            Path path = Paths.get(Constantes.DOC_RELACIONADOS_PATH + filename + ".json");
+            filename = filename.contains(".json") ? filename : filename + ".json";
+            Path path = Paths.get(filePath + filename);
             String content = Files.readString(path);
             ObjectMapper mapper = new ObjectMapper();
             

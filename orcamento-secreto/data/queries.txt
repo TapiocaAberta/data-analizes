@@ -4,6 +4,17 @@ select count(*) from documentos where processado = true;
 select id, codigoemenda, quantidadedocumentos from emendas where muitosdocumentos = true and processado = false order by quantidadedocumentos asc;
 SELECT COUNT(*) from documentos where processado=false;
 
-$ podman cp postgres-container:/orcamentos_231022.sql orcamentos_231022.sql
+> pg_dump -U keycloak orcamentos > orcamentos_231022.sql
+> $ podman cp postgres-container:/orcamentos_231022.sql orcamentos_231022.sql
+
+###############
+
+orcamentos=# select id from favorecido where tipo = 'Não Listado';
+    id    
+----------
+   579002
+ 27466057
+ 27466356
+
 
 

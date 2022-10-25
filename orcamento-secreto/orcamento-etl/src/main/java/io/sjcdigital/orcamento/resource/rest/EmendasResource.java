@@ -10,6 +10,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -36,13 +37,13 @@ public class EmendasResource {
     
     @GET
     @Path("/buscaEmendas/arquivos")
-    public Response buscaPorArquivos() {
+    public Response buscaPorArquivos(@QueryParam("index") Integer index) {
         LOGGER.info("Buscando Emendas por arquivos");
         
         ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
         
         newSingleThreadExecutor.submit(() -> {
-            docrelacionadosService.processaMuitosDocumentosArquivo();
+            docrelacionadosService.processaMuitosDocumentosArquivo(index);
         });
         
         return Response.ok().build();
