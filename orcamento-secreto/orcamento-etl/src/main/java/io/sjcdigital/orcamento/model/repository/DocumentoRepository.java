@@ -21,6 +21,10 @@ public class DocumentoRepository implements PanacheRepository<Documentos> {
         return find("fase = ?1 and codigoDocumento = ?2", fase, codigoDocumento).firstResult();
     }
     
+    public List<Documentos> findByFavorecidoId(Long id) {
+        return find("favorecido.id = ?1", id).list();
+    }
+    
     public Map<String, Documentos> findByCodigoDocumento(List<String> codigos) {
         return find("codigoDocumento in (?1)", codigos).stream().collect(Collectors.toMap(Documentos::getCodigoDocumento, Function.identity()));
     }

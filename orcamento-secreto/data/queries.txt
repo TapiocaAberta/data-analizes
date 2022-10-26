@@ -1,20 +1,36 @@
 select count(*) from emendas where processado = true;
 select count(*) from documentos where processado = true;
 
+select fase, valordocumento, favorecido_id, orgaopagador_id from documentos where codigodocumento='155124264432020NE801984';
+
 select id, codigoemenda, quantidadedocumentos from emendas where muitosdocumentos = true and processado = false order by quantidadedocumentos asc;
 SELECT COUNT(*) from documentos where processado=false;
 
+########################################################################################################################################################### 
+update para não processado
+select fase, codigodocumento from documentos where favorecido_id=27632968;
+select count(*) from documentos where favorecido_id=27632968;
+###########################################################################################################################################################
+
+###########################################################################################################################################################
+NULOS
+select count(*) from documentos where favorecido_id = 28386653;
+###########################################################################################################################################################
+
+###########################################################################################################################################################
 > pg_dump -U keycloak orcamentos > orcamentos_231022.sql
 > $ podman cp postgres-container:/orcamentos_231022.sql orcamentos_231022.sql
+> psql -U keycloak orcamentos < orcamentos_251022.sql 
+###########################################################################################################################################################
 
-###############
 
-orcamentos=# select id from favorecido where tipo = 'Não Listado';
-    id    
-----------
-   579002
- 27466057
- 27466356
-
+###########################################################################################################################################################
+ALTER TABLE table1 DISABLE TRIGGER ALL;
+ALTER TABLE table2 DISABLE TRIGGER ALL;
+DELETE FROM table1;
+DELETE FROM table2;
+ALTER TABLE table1 ENABLE TRIGGER ALL;
+ALTER TABLE table2 ENABLE TRIGGER ALL;
+###########################################################################################################################################################
 
 

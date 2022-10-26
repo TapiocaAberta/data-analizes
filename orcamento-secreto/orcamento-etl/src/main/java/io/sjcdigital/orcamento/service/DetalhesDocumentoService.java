@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import io.sjcdigital.orcamento.model.entity.DetalhesErro;
 import io.sjcdigital.orcamento.model.entity.Documentos;
 import io.sjcdigital.orcamento.model.entity.Favorecido;
 import io.sjcdigital.orcamento.model.entity.OrgaoPagador;
@@ -46,16 +47,15 @@ public class DetalhesDocumentoService {
     @Inject OrgaoPagadorRepository orgaoPagadorRepository;
     
     public void salvaPaginaDetalhes(List<Documentos> value) throws HttpStatusException {
-
-        ExecutorService executor = Executors.newCachedThreadPool();
         
         LOGGER.info("[INICIO] Buscando detalhes do documento");
+        
+        ExecutorService ex = Executors.newSingleThreadExecutor(); //newFixedThreadPool(50);
 
         value.forEach(d -> {
             
+            ex.submit(() -> {
             
-            executor.submit(() -> {
-                
                 try {
                     
                     Response execute = Jsoup.connect(pegaURLDocumento(d.getFase(), d.getCodigoDocumento()))
@@ -83,10 +83,12 @@ public class DetalhesDocumentoService {
                     LOGGER.error("[ERRO] ao pegar pagina de detalhe. "
                             + "Fase:" + d.getFase() + ", Código Documento: " + d.getCodigoDocumento() + " [ " + e.getMessage() + " ]");
                 }
-
+                
             });
 
-        });
+            });
+        
+        ex.shutdown();
 
     }
 
@@ -107,7 +109,7 @@ public class DetalhesDocumentoService {
 
     }
     
-    protected String pegaTipoPessoa(String url) {
+    protected String pegaTipoPessoaUrl(String url) {
         if(url.contains("fisica")) {
             return "Pessoa Física";
         } else if(url.contains("juridica")) {
@@ -116,7 +118,25 @@ public class DetalhesDocumentoService {
             return "Não Listado";
         }
     }
+    
+    @Transactional
+    protected String verificaString(String value, String campo, String fase, String codigoDocumento, boolean folhaPagamento) {
+        
+        if (!folhaPagamento) {
 
+            if (value == null || value.trim().equals("")) {
+                DetalhesErro erro = new DetalhesErro();
+                erro.setCodigoDocumento(codigoDocumento);
+                erro.setFase(fase);
+                erro.setUrl(pegaURLDocumento(fase, codigoDocumento));
+                erro.setDescricao(campo.toUpperCase() + " - Erro ao ler o campo!");
+                erro.persist();
+            }
+        }
+        
+        return value;
+    }
+    
     /**
      * @param detalheURL
      * @param documento
@@ -140,28 +160,40 @@ public class DetalhesDocumentoService {
             Elements dadosTabelados = doc.getElementsByClass("dados-tabelados");
             documento.setDescricao(dadosTabelados.select("strong:contains(Descrição)").next("span").text());
             documento.setTipo(dadosTabelados.select("strong:contains(Tipo de documento)").next("span").text());
-            documento.setValorDocumento(dadosTabelados.select("strong:contains(Valor do documento)").next("span").text());
+            documento.setValorDocumento(dadosTabelados.select("strong:contains(Valor)").next("span").text());
             documento.setObservacao(dadosTabelados.select("strong:contains(Observação do documento)").next("span").text());
     
             Elements dadosDetalhados = doc.getElementsByClass("dados-detalhados");
     
             // Apenas Dados favorecido
             Elements favorecidoDiv = dadosDetalhados.select("button:contains(Dados do Favorecido)").next("div");
+            
             String documentoFavorecido = favorecidoDiv.select("strong:contains(CPF/CNPJ/Outros)").next("span").text();
     
             Favorecido favorecido = favorecidoRepository.findByDocumento(documentoFavorecido);
     
             if (Objects.isNull(favorecido)) {
                 favorecido = new Favorecido();
-                favorecido.docFavorecido = documentoFavorecido;
-                favorecido.nome = favorecidoDiv.select("strong:contains(Nome)").next("span").text();
                 
                 String url = favorecidoDiv.select("strong:contains(CPF/CNPJ/Outros)").next("span").select("a").attr("abs:href");
                 favorecido.url = url;
-                favorecido.tipo = pegaTipoPessoa(url);
+                
+                boolean folhaPagamento = false;
+                
+                String nome = favorecidoDiv.select("strong:contains(Nome)").next("span").text();
+                favorecido.nome = verificaString(nome, "Nome Favorecido", documentos.getFase(), documentos.getCodigoDocumento(), folhaPagamento);
+                
+                if("DADO REFERENTE À FOLHA DE PAGAMENTO".toLowerCase().equals(nome.toLowerCase())) {
+                    folhaPagamento = true;
+                    favorecido.tipo = "Folha de Pagamento";
+                } else {
+                    favorecido.tipo = pegaTipoPessoaUrl(url);
+                }
+                
+                favorecido.docFavorecido =  verificaString(documentoFavorecido, "Documento Favorecido", documentos.getFase(), 
+                        documentos.getCodigoDocumento(), folhaPagamento);
                 
                 favorecidoRepository.persist(favorecido);
-    
                 documento.setFavorecido(favorecido);
     
             } else {
@@ -186,6 +218,7 @@ public class DetalhesDocumentoService {
             OrgaoPagador orgaoPagador = orgaoPagadorRepository.findByCodes(orgaoSuperiorCod, entidadeVinculadaCod, unidadeGestoraCod, gestaoCod);
     
             if (Objects.isNull(orgaoPagador)) {
+                
                 orgaoPagador = new OrgaoPagador();
                 orgaoPagador.orgaoSuperiorCod = orgapSuperiorDiv.next("span").text();
                 orgaoPagador.orgaoSuperiorNome = orgapSuperiorDiv.next("span").next("span").text();

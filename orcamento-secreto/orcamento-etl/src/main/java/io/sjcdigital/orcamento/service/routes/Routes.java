@@ -39,19 +39,21 @@ public class Routes extends RouteBuilder {
             .process(new EmendasProcessor())
             .to("bean:documentosRelacionadosBean?method=buscaDocumentosRelacionado(${body})")
         ;
+         
         
-       
-        
-        from("timer://selectDocumento?fixedRate=true&period=60000") //every 1min
+        from("timer://selectDocumento?fixedRate=true&period=60000")
             .setBody(constant("select id, fase, codigoDocumento from documentos where processado = false "
                                                                                     + "and processando = false "
                                                                                     + "and pgdetalhesnotfound = false "
-                                                                                    + "limit 1000;"))
+                                                                                    + "limit 300;"))
             .to("jdbc:default")
             .process(new DocumentosProcessor())
             .to("bean:detalhesDocumentoBean?method=salvaPaginaDetalhes(${body})")
            ;
-         **/
+           
+           */
+           
+        
     }
 
 }

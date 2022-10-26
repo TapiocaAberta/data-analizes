@@ -43,6 +43,7 @@ public class OrcamentoSecretoService extends PortalTransparencia {
         emendasRepository.findAll().stream().forEach(e -> {
             String filePath = Constantes.DATA_JSON_PATH + e.ano + "/";
             String fileName = e.id + "-" + e.numeroEmenda;
+            e.documentos.removeIf(d -> d.getProcessado() == false);
             FileUtil.salvaJSON(e, filePath, fileName);
         });
         

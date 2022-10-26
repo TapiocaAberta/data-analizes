@@ -325,6 +325,7 @@ public class Documentos extends PanacheEntity {
     /**
      * @return the emenda
      */
+    @JsonIgnore
     public List<Emendas> getEmenda() {
         return emenda;
     }

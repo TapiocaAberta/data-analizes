@@ -1,6 +1,5 @@
 package io.sjcdigital.orcamento.service;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,7 +61,7 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
             walk.filter(Files::isRegularFile).collect(Collectors.toList()).forEach(f -> {
                 DocumentosRelacionadosPojo pojo = d.readJsonFile(Constantes.DOC_RELACIONADOS_PATH, f.getFileName().toString());
                 
-                Collection<List<DocumentosDataPojo>> partition = d.partition(pojo.getData(), 10000);
+                Collection<List<DocumentosDataPojo>> partition = d.partition(pojo.getData(), 5000);
                 int i = 1;
                 
                 for (List<DocumentosDataPojo> p : partition) {
