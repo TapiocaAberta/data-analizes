@@ -1,7 +1,7 @@
 select count(*) from emendas where processado = true;
 select count(*) from documentos where processado = true;
 
-select fase, valordocumento, favorecido_id, orgaopagador_id from documentos where codigodocumento='155124264432020NE801984';
+select fase, valordocumento, favorecido_id, orgaopagador_id from documentos where codigodocumento='160204000012020NE805065';
 
 select id, codigoemenda, quantidadedocumentos from emendas where muitosdocumentos = true and processado = false order by quantidadedocumentos asc;
 SELECT COUNT(*) from documentos where processado=false;
@@ -15,6 +15,7 @@ select count(*) from documentos where favorecido_id=27632968;
 ###########################################################################################################################################################
 NULOS
 select count(*) from documentos where favorecido_id = 28386653;
+select fase, codigodocumento, tipo, valordocumento from documentos where favorecido_id = 28386653 and processado = true order by id desc;
 ###########################################################################################################################################################
 
 ###########################################################################################################################################################

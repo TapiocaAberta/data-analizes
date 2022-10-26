@@ -18,10 +18,8 @@ public class Routes extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         
-        
-        /**
         from("timer://selectMuitosDocumento?fixedRate=true&period=120000")
-        .setBody(constant("select id, codigoEmenda from emendas where processado = false and "
+            .setBody(constant("select id, codigoEmenda from emendas where processado = false and "
                 + "processando = false and "
                 + "muitosDocumentos = true "
                 + "order by quantidadedocumentos asc "
@@ -39,9 +37,8 @@ public class Routes extends RouteBuilder {
             .process(new EmendasProcessor())
             .to("bean:documentosRelacionadosBean?method=buscaDocumentosRelacionado(${body})")
         ;
-         
         
-        from("timer://selectDocumento?fixedRate=true&period=60000")
+        from("timer://selectDocumento?fixedRate=true&period=40000")
             .setBody(constant("select id, fase, codigoDocumento from documentos where processado = false "
                                                                                     + "and processando = false "
                                                                                     + "and pgdetalhesnotfound = false "
@@ -50,8 +47,6 @@ public class Routes extends RouteBuilder {
             .process(new DocumentosProcessor())
             .to("bean:detalhesDocumentoBean?method=salvaPaginaDetalhes(${body})")
            ;
-           
-           */
            
         
     }

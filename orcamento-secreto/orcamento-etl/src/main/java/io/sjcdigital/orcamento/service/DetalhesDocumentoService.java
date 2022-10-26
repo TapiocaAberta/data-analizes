@@ -3,6 +3,8 @@ package io.sjcdigital.orcamento.service;
 import static io.sjcdigital.orcamento.utils.PortalTransparenciaConstantes.DOCUMENTO_URL;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -48,13 +50,14 @@ public class DetalhesDocumentoService {
     
     public void salvaPaginaDetalhes(List<Documentos> value) throws HttpStatusException {
         
-        LOGGER.info("[INICIO] Buscando detalhes do documento");
+        LOGGER.info("[INICIO] Buscando detalhes do documento ");
+        Instant start = Instant.now(); //1
         
-        ExecutorService ex = Executors.newSingleThreadExecutor(); //newFixedThreadPool(50);
+        //ExecutorService ex = Executors.newSingleThreadExecutor();
 
         value.forEach(d -> {
             
-            ex.submit(() -> {
+            //ex.submit(() -> {
             
                 try {
                     
@@ -86,9 +89,12 @@ public class DetalhesDocumentoService {
                 
             });
 
-            });
+            //});
         
-        ex.shutdown();
+        //ex.shutdown();
+        Instant end = Instant.now(); //1 
+        long interval = Duration.between(start, end).toSeconds(); //1
+        LOGGER.info("[FIM] Buscando detalhes do documento em " + interval + "s");
 
     }
 
@@ -144,7 +150,13 @@ public class DetalhesDocumentoService {
     @Transactional
     public void processaDetalhes(String file, Documentos documentos) {
         
-        Documentos documento = documentoRepository.findByFaseAndCodigoDocumento(documentos.getFase(), documentos.getCodigoDocumento());
+        Documentos documento = null;
+        
+        if(Objects.isNull(documentos.id)) {
+            documento = documentoRepository.findByFaseAndCodigoDocumento(documentos.getFase(), documentos.getCodigoDocumento());
+        } else {
+            documento = documentos;
+        }
         
         try {
     

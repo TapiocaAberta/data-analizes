@@ -33,4 +33,8 @@ public class DocumentoRepository implements PanacheRepository<Documentos> {
         return findAll().stream().collect(Collectors.toMap(Documentos::getCodigoDocumento, Function.identity()));
     }
 
+    public List<Documentos> findNaoProcessado(int limit) {
+        return find("processado = false and processando = false").range(0, limit).list();
+    }
+
 }

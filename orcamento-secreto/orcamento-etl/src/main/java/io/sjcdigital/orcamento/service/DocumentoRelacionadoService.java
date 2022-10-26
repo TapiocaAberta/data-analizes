@@ -84,7 +84,6 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
             e.printStackTrace();
         }
         
-        
     }
     
     @Transactional
