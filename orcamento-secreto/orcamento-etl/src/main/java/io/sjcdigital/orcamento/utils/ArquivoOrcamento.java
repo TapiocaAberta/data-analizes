@@ -17,10 +17,8 @@ import io.sjcdigital.orcamento.model.entity.Emendas;
 import io.sjcdigital.orcamento.model.pojo.ArquivosPojo;
 
 public class ArquivoOrcamento {
-
-    private static final String PATH = "/home/pesilva/workspace/code/pessoal/data-analizes/orcamento-secreto/data-json/";
-
-    public static void main(String[] args) {
+    
+    public static void criaArquivoEmendas() {
 
         List<String> anos = Arrays.asList("2020", "2021", "2022");
         List<ArquivosPojo> arquivosPojo = new ArrayList<>();
@@ -30,7 +28,7 @@ public class ArquivoOrcamento {
 
             System.out.println("Coletando " + ano + "\n");
 
-            Path path = Paths.get(PATH + ano);
+            Path path = Paths.get(Constantes.DATA_JSON_PATH + ano);
 
             try {
 
@@ -62,7 +60,7 @@ public class ArquivoOrcamento {
 
     private static void salvaJSON(List<ArquivosPojo> arquivosPojo) {
         String fileName = "arquivos";
-        createJsonFile(PATH, fileName, arquivosPojo);
+        createJsonFile(Constantes.DATA_JSON_PATH, fileName, arquivosPojo);
     }
 
     private static void createJsonFile(String directoryName, String arquivoNome, List<ArquivosPojo> arquivosPojo) {

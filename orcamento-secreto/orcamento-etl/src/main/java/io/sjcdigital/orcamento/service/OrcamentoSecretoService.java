@@ -16,6 +16,7 @@ import io.sjcdigital.orcamento.model.entity.Emendas;
 import io.sjcdigital.orcamento.model.pojo.EmendasPojo;
 import io.sjcdigital.orcamento.model.repository.EmendasRepository;
 import io.sjcdigital.orcamento.resource.client.EmendaClient;
+import io.sjcdigital.orcamento.utils.ArquivoOrcamento;
 import io.sjcdigital.orcamento.utils.Constantes;
 import io.sjcdigital.orcamento.utils.FileUtil;
 
@@ -46,6 +47,8 @@ public class OrcamentoSecretoService extends PortalTransparencia {
             e.documentos.removeIf(d -> d.getProcessado() == false);
             FileUtil.salvaJSON(e, filePath, fileName);
         });
+        
+        ArquivoOrcamento.criaArquivoEmendas();
         
         LOGGER.info("Todos arquivos salvos em " + Constantes.DATA_JSON_PATH);
     }

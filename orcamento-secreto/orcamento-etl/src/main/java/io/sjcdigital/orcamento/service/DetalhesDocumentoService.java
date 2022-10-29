@@ -3,12 +3,16 @@ package io.sjcdigital.orcamento.service;
 import static io.sjcdigital.orcamento.utils.PortalTransparenciaConstantes.DOCUMENTO_URL;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -31,6 +35,7 @@ import io.sjcdigital.orcamento.model.entity.OrgaoPagador;
 import io.sjcdigital.orcamento.model.repository.DocumentoRepository;
 import io.sjcdigital.orcamento.model.repository.FavorecidoRepository;
 import io.sjcdigital.orcamento.model.repository.OrgaoPagadorRepository;
+import io.sjcdigital.orcamento.utils.Constantes;
 import io.sjcdigital.orcamento.utils.PortalTransparenciaConstantes;
 
 /**
@@ -48,16 +53,14 @@ public class DetalhesDocumentoService {
     @Inject FavorecidoRepository favorecidoRepository;
     @Inject OrgaoPagadorRepository orgaoPagadorRepository;
     
+    @Transactional
     public void salvaPaginaDetalhes(List<Documentos> value) throws HttpStatusException {
         
         LOGGER.info("[INICIO] Buscando detalhes do documento ");
         Instant start = Instant.now(); //1
         
-        //ExecutorService ex = Executors.newSingleThreadExecutor();
-
+        
         value.forEach(d -> {
-            
-            //ex.submit(() -> {
             
                 try {
                     
@@ -74,6 +77,10 @@ public class DetalhesDocumentoService {
                    
                     if(e.getStatusCode() == 404) {
                         
+                        Documentos documento = documentoRepository.findByFaseAndCodigoDocumento(d.getFase(), d.getCodigoDocumento());
+                        documento.setPgDetalhesNotFound(true);
+                        documento.persistAndFlush();
+                        
                         LOGGER.error("[ERRO] ao pegar pagina de detalhes não encontrada. "
                                 + "Fase:" + d.getFase() + ", Código Documento: " + d.getCodigoDocumento() + " [ " + e.getMessage() + " ]");
                        
@@ -89,9 +96,6 @@ public class DetalhesDocumentoService {
                 
             });
 
-            //});
-        
-        //ex.shutdown();
         Instant end = Instant.now(); //1 
         long interval = Duration.between(start, end).toSeconds(); //1
         LOGGER.info("[FIM] Buscando detalhes do documento em " + interval + "s");

@@ -7,7 +7,7 @@ package io.sjcdigital.orcamento.utils;
 public class Constantes {
     
     public static final String PATH = "/home/pesilva/workspace/code/pessoal/data-analizes/orcamento-secreto/";
-    public static final String DATA_JSON_PATH = PATH + "data-json/";
+    public static final String DATA_JSON_PATH = "/home/pesilva/workspace/code/pessoal/emendas-data-etl/data-json/";
     public static final String ORIGINAIS_PATH = PATH + "data/originais/";
     public static final String EMENDAS_CSV = PATH + "data/emendas.csv";
     public static final String EMENDAS_PATH = ORIGINAIS_PATH + "emendas/";
