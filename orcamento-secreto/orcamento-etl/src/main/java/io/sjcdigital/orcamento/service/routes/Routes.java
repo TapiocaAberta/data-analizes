@@ -4,8 +4,10 @@ import javax.enterprise.context.ApplicationScoped;
 
 import org.apache.camel.builder.RouteBuilder;
 
+import io.sjcdigital.orcamento.model.entity.Favorecido;
 import io.sjcdigital.orcamento.service.routes.processors.DocumentosProcessor;
 import io.sjcdigital.orcamento.service.routes.processors.EmendasProcessor;
+import io.sjcdigital.orcamento.service.routes.processors.FavorecidoProcessor;
 
 /**
  * @author Pedro Hos <pedro-hos@outlook.com>
@@ -17,7 +19,7 @@ public class Routes extends RouteBuilder {
     
     @Override
     public void configure() throws Exception {
-        
+        /**
         from("timer://selectMuitosDocumento?fixedRate=true&period=120000")
             .setBody(constant("select id, codigoEmenda from emendas where processado = false and "
                 + "processando = false and "
@@ -47,7 +49,17 @@ public class Routes extends RouteBuilder {
             .process(new DocumentosProcessor())
             .to("bean:detalhesDocumentoBean?method=salvaPaginaDetalhes(${body})")
            ;
-           
+        
+        from("timer://updateFavorecido?fixedRate=true&period=40000")
+        .setBody(constant("select id from favorecido where tipo = '" + Favorecido.PESSOA_JURIDICA + "' "
+                + "and processado = false "
+                + "and LENGTH(docfavorecido) = 18 "
+                + "limit 100"))
+        .to("jdbc:default")
+        .process(new FavorecidoProcessor())
+        .to("bean:favorecidoBean?method=atualizaPessoaFisicaInfos(${body})")
+       ;
+       **/
         
     }
 

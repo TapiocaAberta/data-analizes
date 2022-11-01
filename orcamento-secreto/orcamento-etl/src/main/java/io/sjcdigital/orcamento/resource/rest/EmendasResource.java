@@ -25,6 +25,7 @@ import io.sjcdigital.orcamento.model.entity.Documentos;
 import io.sjcdigital.orcamento.model.repository.DocumentoRepository;
 import io.sjcdigital.orcamento.service.DetalhesDocumentoService;
 import io.sjcdigital.orcamento.service.DocumentoRelacionadoService;
+import io.sjcdigital.orcamento.service.FavorecidoService;
 import io.sjcdigital.orcamento.service.OrcamentoSecretoService;
 import io.sjcdigital.orcamento.utils.Constantes;
 import io.sjcdigital.orcamento.utils.FileUtil;
@@ -43,12 +44,18 @@ public class EmendasResource {
 
     @Inject
     OrcamentoSecretoService orcamentoService;
+    
     @Inject
     DocumentoRelacionadoService docrelacionadosService;
+    
     @Inject
     DetalhesDocumentoService detalhesService;
+    
     @Inject
     DocumentoRepository documentRepository;
+
+    @Inject
+    FavorecidoService favorecidoService;
 
     @GET
     @Path("/documentos/favorecido/{id}")
@@ -60,6 +67,20 @@ public class EmendasResource {
         return Response.ok().build();
     }
 
+    /**
+    @GET
+    @Path("/documentos/favorecido/atualiza")
+    public Response buscaDocumentoPorFavorecido() {
+        ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
+
+        newSingleThreadExecutor.submit(() -> {
+            favorecidoService.atualizaPessoaFisicaInfos();
+        });
+        
+        return Response.ok().build();
+    }
+**/
+    
     @GET
     @Path("/documentos/fase/{fase}/codigo/{codigo}")
     @Transactional
@@ -73,12 +94,12 @@ public class EmendasResource {
         }
         return Response.ok().build();
     }
-    
+
     @GET
     @Path("/documentos")
     @Transactional
     public Response buscaDocumento(@QueryParam("limit") Integer limit) throws HttpStatusException {
-        
+
         detalhesService.salvaPaginaDetalhes(documentRepository.findNaoProcessado(limit));
         return Response.ok().build();
     }
@@ -128,9 +149,9 @@ public class EmendasResource {
         newSingleThreadExecutor.submit(() -> {
             orcamentoService.salvaTodasEmendasJson();
         });
-        
+
         newSingleThreadExecutor.shutdown();
-        
+
         return Response.ok().build();
     }
 

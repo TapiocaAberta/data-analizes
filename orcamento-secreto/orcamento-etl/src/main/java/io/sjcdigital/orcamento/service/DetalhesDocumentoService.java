@@ -3,16 +3,10 @@ package io.sjcdigital.orcamento.service;
 import static io.sjcdigital.orcamento.utils.PortalTransparenciaConstantes.DOCUMENTO_URL;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -35,7 +29,6 @@ import io.sjcdigital.orcamento.model.entity.OrgaoPagador;
 import io.sjcdigital.orcamento.model.repository.DocumentoRepository;
 import io.sjcdigital.orcamento.model.repository.FavorecidoRepository;
 import io.sjcdigital.orcamento.model.repository.OrgaoPagadorRepository;
-import io.sjcdigital.orcamento.utils.Constantes;
 import io.sjcdigital.orcamento.utils.PortalTransparenciaConstantes;
 
 /**
@@ -121,11 +114,11 @@ public class DetalhesDocumentoService {
     
     protected String pegaTipoPessoaUrl(String url) {
         if(url.contains("fisica")) {
-            return "Pessoa Física";
+            return Favorecido.PESSOA_FISICA;
         } else if(url.contains("juridica")) {
-            return "Pessoa Jurídica";
+            return Favorecido.PESSOA_JURIDICA;
         } else {
-            return "Não Listado";
+            return Favorecido.NAO_LISTADO;
         }
     }
     

@@ -19,6 +19,7 @@ import io.sjcdigital.orcamento.resource.client.EmendaClient;
 import io.sjcdigital.orcamento.utils.ArquivoOrcamento;
 import io.sjcdigital.orcamento.utils.Constantes;
 import io.sjcdigital.orcamento.utils.FileUtil;
+import io.sjcdigital.orcamento.utils.PortalTransparenciaConstantes;
 
 /**
  * @author Pedro Hos <pedro-hos@outlook.com>
@@ -28,7 +29,7 @@ import io.sjcdigital.orcamento.utils.FileUtil;
 @ApplicationScoped
 @Named("orcamentoBean")
 @RegisterForReflection
-public class OrcamentoSecretoService extends PortalTransparencia {
+public class OrcamentoSecretoService extends Service {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrcamentoSecretoService.class);
 
@@ -115,7 +116,7 @@ public class OrcamentoSecretoService extends PortalTransparencia {
     }
     
     protected EmendasPojo buscaEmendas(final int offset, final int tamanhoPagina, final String palavraChave) {
-        ResteasyWebTarget target = getTarget();
+        ResteasyWebTarget target = getTarget(PortalTransparenciaConstantes.URL);
         EmendaClient proxy = target.proxy(EmendaClient.class);
         EmendasPojo emendas = proxy.getEmendas(offset, EmendaClient.PAGINACAO_SIMPLES, tamanhoPagina,
                 EmendaClient.DIRECAO_ORDENACAO, EmendaClient.COLUNA_ORDENACAO, EmendaClient.ANO_DE,
@@ -125,7 +126,7 @@ public class OrcamentoSecretoService extends PortalTransparencia {
     }
 
     protected EmendasPojo buscaEmendas(final int offset, final int tamanhoPagina) {
-        ResteasyWebTarget target = getTarget();
+        ResteasyWebTarget target = getTarget(PortalTransparenciaConstantes.URL);
         EmendaClient proxy = target.proxy(EmendaClient.class);
         EmendasPojo emendas = proxy.getEmendas(offset, EmendaClient.PAGINACAO_SIMPLES, tamanhoPagina,
                 EmendaClient.DIRECAO_ORDENACAO, EmendaClient.COLUNA_ORDENACAO, EmendaClient.ANO_DE,
@@ -135,7 +136,7 @@ public class OrcamentoSecretoService extends PortalTransparencia {
     }
 
     protected EmendasPojo buscaEmendas(final int offset) {
-        ResteasyWebTarget target = getTarget();
+        ResteasyWebTarget target = getTarget(PortalTransparenciaConstantes.URL);
         EmendaClient proxy = target.proxy(EmendaClient.class);
         EmendasPojo emendas = proxy.getEmendas(offset, EmendaClient.PAGINACAO_SIMPLES, EmendaClient.TAMANHO_PAGINA,
                 EmendaClient.DIRECAO_ORDENACAO, EmendaClient.COLUNA_ORDENACAO, EmendaClient.ANO_DE,

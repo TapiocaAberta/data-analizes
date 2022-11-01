@@ -36,6 +36,7 @@ import io.sjcdigital.orcamento.model.repository.EmendasRepository;
 import io.sjcdigital.orcamento.resource.client.DocumentosRelacionadosClient;
 import io.sjcdigital.orcamento.utils.Constantes;
 import io.sjcdigital.orcamento.utils.FileUtil;
+import io.sjcdigital.orcamento.utils.PortalTransparenciaConstantes;
 
 /**
  * @author Pedro Hos <pedro-hos@outlook.com>
@@ -44,7 +45,7 @@ import io.sjcdigital.orcamento.utils.FileUtil;
 @ApplicationScoped
 @Named("documentosRelacionadosBean")
 @RegisterForReflection
-public class DocumentoRelacionadoService extends PortalTransparencia {
+public class DocumentoRelacionadoService extends Service {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DocumentoRelacionadoService.class);
     
@@ -52,7 +53,7 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
     @Inject EmendasRepository emendaReporitory;
     @Inject DocumentoRepository documentoRepository;
     
-    public static void main(String[] args) {
+    public static void separaDocumentos() {
         
         DocumentoRelacionadoService d = new DocumentoRelacionadoService();
         
@@ -96,8 +97,6 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
         
         String filePath = Constantes.DOC_RELACIONADOS_PATH + "partition/" + emenda.id + "/";
         List<Path> files = listFiles(Paths.get(filePath));
-        
-        //listFiles(Paths.get(filePath)).forEach(file -> {
             
             LOGGER.info("[INICIADO] Processo para emenda id " + emenda.id + " [ " + index + " ]");
             
@@ -113,8 +112,6 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
             emendaReporitory.persist(emenda);
             
             LOGGER.info("[FINALIZADO] Processo para emenda id " + emenda.id + " [ " + index + " ]");
-            
-       //});
         
         LOGGER.info("[FINALIZADO TODO PROCESSO]");
         
@@ -385,7 +382,7 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
     }
     
     public DocumentosRelacionadosPojo buscaDocumentos(final int offset, final int tamanhoPagina, final String codigoEmenda) {
-        ResteasyWebTarget target = getTarget();
+        ResteasyWebTarget target = getTarget(PortalTransparenciaConstantes.URL);
         DocumentosRelacionadosClient proxy = target.proxy(DocumentosRelacionadosClient.class);
         DocumentosRelacionadosPojo pojo = proxy.pegaDocs( offset, codigoEmenda, 
                                                           DocumentosRelacionadosClient.PAGINACAO_SIMPLES, 
@@ -397,7 +394,7 @@ public class DocumentoRelacionadoService extends PortalTransparencia {
     }
     
     public DocumentosRelacionadosPojo buscaDocumentos(final int offset, final String codigoEmenda) {
-        ResteasyWebTarget target = getTarget();
+        ResteasyWebTarget target = getTarget(PortalTransparenciaConstantes.URL);
         DocumentosRelacionadosClient proxy = target.proxy(DocumentosRelacionadosClient.class);
         DocumentosRelacionadosPojo pojo = proxy.pegaDocs( offset, codigoEmenda, 
                                                           DocumentosRelacionadosClient.PAGINACAO_SIMPLES, 
