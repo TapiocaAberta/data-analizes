@@ -1,0 +1,43 @@
+---
+title: "Análises"
+author: "pedro-hos@outlook.com"
+date: "1/14/2023"
+output: html_document
+---
+
+```{r}
+library(knitr)
+library(ggplot2)
+library(dplyr)
+library(rmarkdown)
+library(ggpubr)
+load("../data/cartao_corporativo_bolsonaro.RData")
+```
+
+```{r}
+dplyr::glimpse(cartao_corporativo)
+```
+
+```{r}
+por_subelemento <- cartao_corporativo %>% 
+  dplyr::group_by(SUBELEMENTO.DE.DESPESA) %>%
+  summarise(VALOR_SUM = sum(VALOR)) %>% 
+  arrange(desc(VALOR_SUM))
+```
+
+Primeiramente, vamos ver quais foram os principais gastos:
+
+```{r}
+paged_table(por_subelemento)
+```
+
+```{r}
+top05_por_subelemento <- por_subelemento[1:5,]
+
+plotly::ggplotly(
+  ggplot(top05_por_subelemento, aes(x=SUBELEMENTO.DE.DESPESA, y=VALOR_SUM)) + 
+    labs(title = "Top 5 Despesas por Subelemento", x="Subelemento da Despesa", y = "Valor (R$)") +
+    geom_bar(stat = "identity") + 
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+)
+```

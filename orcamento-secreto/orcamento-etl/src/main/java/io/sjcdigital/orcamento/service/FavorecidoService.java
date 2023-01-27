@@ -138,5 +138,6 @@ public class FavorecidoService extends Service {
         target.getResteasyClient().close();
         return pojo;
     }
+    
 
 }
