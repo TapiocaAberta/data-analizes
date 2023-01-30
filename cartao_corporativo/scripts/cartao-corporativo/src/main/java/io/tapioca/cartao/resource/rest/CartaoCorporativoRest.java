@@ -27,7 +27,7 @@ public class CartaoCorporativoRest {
     @Path("/")
     @GET
     public void test() {
-        service.carregaDadosCSV();
+        service.carregaDadosCartaoCSV();
     }
     
 }

@@ -1,13 +1,22 @@
 package io.tapioca.cartao.service;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -20,9 +29,16 @@ import org.slf4j.LoggerFactory;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+import com.opencsv.CSVWriter;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import com.opencsv.exceptions.CsvValidationException;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.tapioca.cartao.model.dto.CartaoCorporativoDTO;
 import io.tapioca.cartao.model.dto.MinhaReceitaDTO;
 import io.tapioca.cartao.model.entity.CartaoCoporativo;
 import io.tapioca.cartao.model.entity.Endereco;
@@ -43,12 +59,122 @@ public class CartaoCorporativoService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CartaoCorporativoService.class);
 
     @ConfigProperty(name = "cartao.path")
-    String arquivo;
+    String cartaoPath;
     
-    public void carregaDadosCSV() {
+    @ConfigProperty(name = "data-etl.path")
+    String dataETLPath;
+    
+    public void criaCSV() {
+        LOGGER.info("Criando CSV com localização ...");
+        
+        List<CartaoCorporativoDTO> cartoesDTO = new ArrayList<>();
+        PanacheQuery<CartaoCoporativo> cartoes = CartaoCoporativo.findAll().page(0, 1000);
+        int paginas = cartoes.pageCount();
+        
+        while(paginas != 0) {
+            
+            cartoes.list().forEach(c -> {
+                
+                CartaoCorporativoDTO cartaoDTO = new CartaoCorporativoDTO();
+                
+                cartaoDTO.setDataPgto(c.dataPagamento.toString());
+                cartaoDTO.setDiaSemanaPgto(c.dataPagamento.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale ("pt", "BR")));
+                cartaoDTO.setDocumentoServidor(c.servidor.cpf);
+                cartaoDTO.setDocumentoFornecedor(c.fornecedor.documento);
+                cartaoDTO.setTipoDocumento(c.fornecedor.tipoDocumento.name());
+                
+                String nomeFornecedor = c.fornecedor.nome.isEmpty() ? c.fornecedor.razaoSocial : c.fornecedor.nome;
+                
+                cartaoDTO.setNomeFornecedor(nomeFornecedor);
+                
+                if(TipoDocumento.CNPJ.equals(c.fornecedor.tipoDocumento)) {
+                
+                    cartaoDTO.setPorte(validaSeExiste(c.fornecedor.porte));
+                    
+                    Endereco endereco = c.fornecedor.endereco;
+                    
+                    if(Objects.nonNull(endereco)) {
+                        Municipio municipio = endereco.municipio;
+                        
+                        if(Objects.nonNull(municipio)) {
+                            cartaoDTO.setMunicipio(municipio.nome);
+                            cartaoDTO.setUf(municipio.estado.uf);
+                            cartaoDTO.setLatitude(municipio.latitude);
+                            cartaoDTO.setLongitude(municipio.longitude);
+                        }
+                    }
+                }
+                
+                cartaoDTO.setValor(c.valor);
+                cartaoDTO.setSubelementoDespesa(c.subelemento.nome);
+                cartaoDTO.setMandato(c.mandato);
+                
+                cartoesDTO.add(cartaoDTO);
+            });
+            
+            
+            //chama prox. pg
+            cartoes = cartoes.nextPage();
+            paginas--;
+        }
+        
+        salvaCartaoCSV(cartoesDTO);
+        
+    }
+    
+    /**
+     * @param cartoesDTO
+     */
+    private void salvaCartaoCSV(List<CartaoCorporativoDTO> cartoesDTO) {
+        
+        cartoesDTO.stream()
+                  .collect(Collectors.groupingBy(CartaoCorporativoDTO::getMandato))
+                  .forEach((mandato, gastos) -> {
+                      String filename = mandato.replace(" ", "").replace("/", "_").toLowerCase().concat(".csv");
+                      String dir = dataETLPath + "/" + selecionaPresidentePorMandato(mandato) + "/";
+                      createDirectoryIfDoesntExists(dir);
+                      Path path = Paths.get( dir + filename);
+                      
+                      try (var writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+
+                          StatefulBeanToCsv<CartaoCorporativoDTO> beanToCsv = new StatefulBeanToCsvBuilder<CartaoCorporativoDTO>(writer)
+                                  .withQuotechar(CSVWriter.DEFAULT_QUOTE_CHARACTER)
+                                  .withSeparator(CSVWriter.DEFAULT_SEPARATOR)
+                                  .build();
+
+                          beanToCsv.write(gastos);
+
+                      } catch (CsvDataTypeMismatchException | CsvRequiredFieldEmptyException | IOException e) {
+                          LOGGER.error("Erro ao criar CSV " + filename, e);
+                      }
+                      
+                  });
+        
+    }
+    
+    protected void createDirectoryIfDoesntExists(String directoryName) {
+        LOGGER.info("Files will be save into " + directoryName + " if you need change it, replace the 'file.path' argument on application.properties file");
+
+        var directory = new File(directoryName);
+        
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+    }
+
+    public String validaSeExiste(String value) {
+        
+        if(Objects.isNull(value)) {
+            return "";
+        }
+        
+        return value;
+        
+    }
+    
+    public void carregaDadosCartaoCSV() {
         LOGGER.info("Iniciando carregamento dos dados do cartão corporativo");
         criaGastosComCartao(leCSV());
-
     }
 
     @Transactional
@@ -77,7 +203,6 @@ public class CartaoCorporativoService {
         cartao.servidor = criaOuRecuperaServidor(cpfServidorStr);
         cartao.subelemento = criaOuRecuperaSubelemento(subelemento);
         cartao.fornecedor = criaOuRecuperaFornecedor(documentoStr, nomeFornecedorStr);
-        //cartao.persistAndFlush();
         
         return cartao;
         
@@ -178,6 +303,22 @@ public class CartaoCorporativoService {
         
         return valor;
     }
+    
+    public String selecionaPresidentePorMandato(String mandato) {
+        
+        switch (mandato) {
+        
+        case "LULA 1", "LULA 2" -> {return "lula";}
+        case "DILMA 1", "DILMA 2" -> {return "dilma";}
+        case "DILMA 2/TEMER" -> {return "dilma-temer";}
+        case "TEMER" -> {return "temer";}
+        case "BOLSONARO" -> {return "bolsonaro";}
+        case "NA" -> {return "na";}
+        
+        default ->
+            throw new IllegalArgumentException("Valor não esperado de mandato: " + mandato);
+        }
+    }
 
     private String selecionaMandato(int ano) {
 
@@ -206,7 +347,7 @@ public class CartaoCorporativoService {
 
     protected List<String[]> leCSV() {
 
-        try (CSVReader reader = new CSVReaderBuilder(new FileReader(arquivo))
+        try (CSVReader reader = new CSVReaderBuilder(new FileReader(cartaoPath))
                 .withCSVParser(new CSVParserBuilder().withSeparator(';').build()).withSkipLines(1).build()) {
 
             return reader.readAll();
